@@ -1,11 +1,14 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import cors from 'cors';
+import apiRouter from './routes/api.ts';
 
 const app = express();
 const port = 3000;
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Welcome to POS Coffee Shop Backend!');
-});
+app.use(cors());
+app.use(express.json());
+
+app.use('/api', apiRouter);
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
