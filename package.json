@@ -1,5 +1,5 @@
 {
-  "name": "pos-coffe-shop-backend",
+  "name": "pos-coffee-shop-backend",
   "version": "1.0.0",
   "type": "module",
   "description": "",
@@ -26,11 +26,16 @@
   "dependencies": {
     "@types/express": "^5.0.2",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "dayjs": "^1.11.13",
+    "express": "^5.1.0",
+    "pino": "^9.7.0",
+    "pino-http": "^10.4.0",
+    "pino-pretty": "^13.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",
     "@types/node": "^22.15.21",
+    "@types/pino-http": "^5.8.4",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
     "@typescript-eslint/utils": "^8.32.1",
