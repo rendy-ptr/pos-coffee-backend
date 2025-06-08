@@ -12,6 +12,10 @@
     "lint:fix": "eslint \"src/**/*.{js,ts}\" --fix",
     "format:check": "prettier --check \"src/**/*.{js,ts}\"",
     "format:fix": "prettier --write \"src/**/*.{js,ts}\"",
+    "prisma:studio": "npx prisma studio",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:seed": "ts-node-esm prisma/seed.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "lint-staged": {
@@ -24,7 +28,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^6.9.0",
     "@types/express": "^5.0.2",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
     "express": "^5.1.0",
@@ -33,6 +39,7 @@
     "pino-pretty": "^13.0.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.18",
     "@types/node": "^22.15.21",
     "@types/pino-http": "^5.8.4",
@@ -47,6 +54,7 @@
     "lint-staged": "^16.0.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.5.3",
+    "prisma": "^6.9.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
