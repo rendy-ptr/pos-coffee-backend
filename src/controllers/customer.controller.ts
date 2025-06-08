@@ -101,7 +101,7 @@ export const loginCustomer = async (
         name: customer.name,
         email: customer.email,
         role: customer.role,
-        token: token,
+        token: `Bearer ${token}`,
       },
     });
   } catch (error) {
