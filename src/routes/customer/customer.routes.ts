@@ -1,8 +1,12 @@
 import express from 'express';
-import { registerCustomer } from '../../controllers/customer.controller.ts';
+import {
+  registerCustomer,
+  loginCustomer,
+} from '../../controllers/customer.controller.ts';
 
 const router = express.Router();
 
 router.post('/register', registerCustomer);
+router.post('/login', loginCustomer);
 
 export default router;
