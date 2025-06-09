@@ -24,14 +24,6 @@ export default [
     rules: {
       ...pluginTs.configs.recommended.rules,
       'prettier/prettier': 'error',
-      'import/extensions': [
-        'error',
-        'always',
-        {
-          ts: 'always',
-          js: 'always',
-        },
-      ],
     },
     settings: {
       'import/resolver': {

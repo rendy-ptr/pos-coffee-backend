@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
 import { PrismaClient, RoleType } from '@prisma/client';
-import { hashPassword, comparePassword } from '../utils/hash.ts';
+import { hashPassword, comparePassword } from '@/utils/hash';
 import jwt from 'jsonwebtoken';
+import { baseLogger } from '@/middlewares/logger';
 
 const prisma = new PrismaClient();
 
@@ -37,25 +38,34 @@ export const registerCustomer = async (
     });
 
     //  Success Response
+    baseLogger.info(
+      `Customer registered successfully | customer-id: ${createCustomer.id}`
+    );
     res.status(201).json({
-      message: 'Customer created successfully',
+      success: true,
+      message: 'Customer registered successfully',
       data: {
         id: createCustomer.id,
         name: createCustomer.name,
-        email: createCustomer.email,
-        role: createCustomer.role,
       },
     });
   } catch (error) {
-    console.error('Error registering customer:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    if (error instanceof Error) {
+      baseLogger.error('Error registering customer', {
+        error: error.message,
+        stack: error.stack ?? 'No stack trace available',
+      });
+    } else {
+      baseLogger.error('Error registering customer', { error: String(error) });
+    }
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 };
 
-export const loginCustomer = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const loginAuth = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
 
   //  Check Required Fields
@@ -99,8 +109,6 @@ export const loginCustomer = async (
       data: {
         id: customer.id,
         name: customer.name,
-        email: customer.email,
-        role: customer.role,
         token: `Bearer ${token}`,
       },
     });

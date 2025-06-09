@@ -1,6 +1,5 @@
 {
   "watch": ["src"],
   "ext": "ts",
-  "ignore": ["**/*.test.ts"],
-  "exec": "node --no-warnings --loader ts-node/esm src/index.ts"
+  "exec": "ts-node --require tsconfig-paths/register src/index.ts"
 }

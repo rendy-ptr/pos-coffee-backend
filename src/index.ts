@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import logger from './middlewares/logger.ts';
-import apiRouter from './routes/api.ts';
+import { httpLogger } from './middlewares/logger';
+import apiRouter from './routes/api';
 
 const app = express();
 
@@ -14,7 +14,7 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
-app.use(logger);
+app.use(httpLogger);
 
 app.use('/api', apiRouter);
 
