@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { PrismaClient, RoleType } from '@prisma/client';
-import { hashPassword, comparePassword } from '@/utils/hash';
-import jwt from 'jsonwebtoken';
+import { hashPassword } from '@/utils/hash';
+// import jwt from 'jsonwebtoken';
 import { baseLogger } from '@/middlewares/logger';
 
 const prisma = new PrismaClient();
@@ -18,8 +18,11 @@ export const registerCustomer = async (
   }
   try {
     // Check Email Duplicate
-    const exitingCustomer = await prisma.customer.findUnique({
+    const exitingCustomer = await prisma.user.findUnique({
       where: { email },
+      include: {
+        customer: true,
+      },
     });
     if (exitingCustomer) {
       res.status(400).json({ message: 'Email already exists' });
@@ -28,10 +31,10 @@ export const registerCustomer = async (
     const hashedPassword = await hashPassword(password);
 
     // Create Customer
-    const createCustomer = await prisma.customer.create({
+    const createCustomer = await prisma.user.create({
       data: {
-        name,
-        email,
+        name: name,
+        email: email,
         password: hashedPassword,
         role: RoleType.customer,
       },
@@ -65,55 +68,57 @@ export const registerCustomer = async (
   }
 };
 
-export const loginAuth = async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body;
+// export const loginAuth = async (req: Request, res: Response): Promise<void> => {
+//   const { email, password } = req.body;
 
-  //  Check Required Fields
-  if (!email || !password) {
-    res.status(400).json({ message: 'Email and password are required' });
-  }
+//   //  Check Required Fields
+//   if (!email || !password) {
+//     res.status(400).json({ message: 'Email and password are required' });
+//   }
 
-  try {
-    // Check Customer
-    const customer = await prisma.customer.findUnique({ where: { email } });
+//   try {
+//     // Check Customer
+//     const customer = await prisma.customer.findUnique({ where: { email } });
 
-    // Check Customer if role is customer
-    if (!customer || customer.role !== RoleType.customer) {
-      res.status(401).json({ message: 'Invalid email or role' });
-      return;
-    }
-    // Check Customer if Deleted
-    if (customer.is_deleted) {
-      res.status(403).json({ message: 'Account is deactivated' });
-      return;
-    }
-    // Check Password
-    const isPasswordValid = await comparePassword(password, customer.password);
-    if (!isPasswordValid) {
-      res.status(401).json({ message: 'Invalid email or password' });
-      return;
-    }
-    // Generate JWT Token
-    const token = jwt.sign(
-      {
-        id: customer.id,
-        email: customer.email,
-        role: customer.role,
-      },
-      process.env.JWT_SECRET as string,
-      { expiresIn: '1h' }
-    );
-    // Success Response
-    res.status(201).json({
-      message: 'Login Successful',
-      data: {
-        id: customer.id,
-        name: customer.name,
-        token: `Bearer ${token}`,
-      },
-    });
-  } catch (error) {
-    console.error('Error logging in customer:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
+//     // Check Customer if role is customer
+//     if (!customer || customer.role !== RoleType.customer) {
+//       res.status(401).json({ message: 'Invalid email or role' });
+//       return;
+//     }
+//     // Check Customer if Deleted
+//     if (customer.is_deleted) {
+//       res.status(403).json({ message: 'Account is deactivated' });
+//       return;
+//     }
+//     // Check Password
+//     const isPasswordValid = await comparePassword(password, customer.password);
+//     if (!isPasswordValid) {
+//       res.status(401).json({ message: 'Invalid email or password' });
+//       return;
+//     }
+//     // Generate JWT Token
+//     const token = jwt.sign(
+//       {
+//         id: customer.id,
+//         email: customer.email,
+//         role: customer.role,
+//       },
+//       process.env.JWT_SECRET as string,
+//       { expiresIn: '1h' }
+//     );
+//     // Success Response
+//     baseLogger.info(`Login successfully | role: ${customer.role}`);
+//     res.status(201).json({
+//       success: true,
+//       message: 'Login Successful',
+//       data: {
+//         id: customer.id,
+//         name: customer.name,
+//         token: `Bearer ${token}`,
+//       },
+//     });
+//   } catch (error) {
+//     console.error('Error logging in customer:', error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// };

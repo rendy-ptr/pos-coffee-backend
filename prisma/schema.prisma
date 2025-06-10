@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  // output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -20,13 +19,46 @@ enum RoleType {
   admin
 }
 
-model Customer {
+model User {
   id         Int       @id @default(autoincrement())
   name       String    @db.VarChar(50)
-  email      String    @db.VarChar(50) @unique
+  email      String    @unique @db.VarChar(50)
   password   String    @db.VarChar(255)
   role       RoleType  @default(customer)
   is_deleted Boolean   @default(false)
-  created_at DateTime  @db.Timestamp() @default(now())
-  updated_at DateTime  @db.Timestamp() @default(now())
+  created_at DateTime  @default(now()) @db.Timestamp()
+  updated_at DateTime  @default(now()) @db.Timestamp()
+  customer   Customer? @relation("UserToCustomer")
+  kasir      Kasir?    @relation("UserToKasir")
+  admin      Admin?    @relation("UserToAdmin")
+}
+
+model Customer {
+  user_id       Int       @id
+  user          User      @relation("UserToCustomer", fields: [user_id], references: [id])
+  loyaltyPoints Int       @default(0)
+  vouchers      Voucher[] @relation("CustomerToVoucher")
+}
+
+model Kasir {
+  user_id Int    @id
+  user    User   @relation("UserToKasir", fields: [user_id], references: [id])
+  shift   String @db.VarChar(50)
+}
+
+model Admin {
+  user_id     Int  @id
+  user        User @relation("UserToAdmin", fields: [user_id], references: [id])
+  permissions Json
+}
+
+model Voucher {
+  id          Int       @id @default(autoincrement())
+  customer_id Int
+  customer    Customer  @relation("CustomerToVoucher", fields: [customer_id], references: [user_id])
+  code        String    @unique @db.VarChar(50)
+  discount    Float
+  expiresAt   DateTime?
+  created_at  DateTime  @default(now()) @db.Timestamp()
+  is_used     Boolean   @default(false)
 }

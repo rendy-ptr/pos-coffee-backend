@@ -13,6 +13,9 @@
     "format:fix": "prettier --write \"src/**/*.{js,ts}\"",
     "prisma:studio": "npx prisma studio",
     "prisma:generate": "npx prisma generate",
+    "prisma:validate": "prisma validate",
+    "prisma:format": "prisma format",
+    "prisma:reset": "npx prisma migrate reset",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:seed": "ts-node-esm prisma/seed.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
