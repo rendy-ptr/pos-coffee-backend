@@ -24,8 +24,11 @@
     "commitlint": "commitlint --from=HEAD~1"
   },
   "lint-staged": {
-    "src/**/*.{js,ts}": [
+    "**/*.{js,ts,tsx}": [
       "eslint --fix",
+      "prettier --write"
+    ],
+    "**/*.json": [
       "prettier --write"
     ]
   },
