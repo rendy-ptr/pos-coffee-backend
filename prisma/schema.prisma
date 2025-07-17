@@ -19,21 +19,21 @@ model Customer {
   email         String    @unique @db.VarChar(50)
   password      String    @db.VarChar(255)
   loyaltyPoints Int       @default(0)
-  is_deleted    Boolean   @default(false)
-  created_at    DateTime  @default(now()) @db.Timestamp()
-  updated_at    DateTime  @default(now()) @db.Timestamp()
+  isDeleted     Boolean   @default(false)
+  createdAt     DateTime  @default(now()) @db.Timestamp()
+  updatedAt     DateTime  @default(now()) @db.Timestamp()
   vouchers      Voucher[] @relation("CustomerToVoucher")
 }
 
 model Kasir {
-  id         Int      @id @default(autoincrement())
-  name       String   @db.VarChar(50)
-  email      String   @unique @db.VarChar(50)
-  password   String   @db.VarChar(255)
-  shift      String   @db.VarChar(50)
-  is_deleted Boolean  @default(false)
-  created_at DateTime @default(now()) @db.Timestamp()
-  updated_at DateTime @default(now()) @db.Timestamp()
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(50)
+  email     String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(255)
+  shift     String   @db.VarChar(50)
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamp()
+  updatedAt DateTime @default(now()) @db.Timestamp()
 }
 
 model Admin {
@@ -42,18 +42,21 @@ model Admin {
   email       String   @unique @db.VarChar(50)
   password    String   @db.VarChar(255)
   permissions Json
-  is_deleted  Boolean  @default(false)
-  created_at  DateTime @default(now()) @db.Timestamp()
-  updated_at  DateTime @default(now()) @db.Timestamp()
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamp()
+  updatedAt   DateTime @default(now()) @db.Timestamp()
 }
 
 model Voucher {
-  id          Int       @id @default(autoincrement())
-  customer_id Int
-  customer    Customer  @relation("CustomerToVoucher", fields: [customer_id], references: [id])
-  code        String    @unique @db.VarChar(50)
-  discount    Float
-  expiresAt   DateTime?
-  created_at  DateTime  @default(now()) @db.Timestamp()
-  is_used     Boolean   @default(false)
+  id               Int       @id @default(autoincrement())
+  customerId       Int
+  customer         Customer  @relation("CustomerToVoucher", fields: [customerId], references: [id])
+  code             String    @unique @db.VarChar(50)
+  discount         Float
+  expiresAt        DateTime?
+  minPurchase      Float?
+  isOnlyForNewUser Boolean   @default(false)
+  terms            String?   @db.Text
+  createdAt        DateTime  @default(now()) @db.Timestamp()
+  isUsed           Boolean   @default(false)
 }

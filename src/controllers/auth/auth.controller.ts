@@ -96,7 +96,7 @@ export const loginAuth = async (req: Request, res: Response): Promise<void> => {
       return;
     }
     // Check Customer if Deleted
-    if (user.is_deleted) {
+    if (user.isDeleted) {
       res.status(403).json({ message: 'Account is deactivated' });
       return;
     }
