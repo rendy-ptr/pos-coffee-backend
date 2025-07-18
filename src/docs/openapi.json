@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "API Dokumentasi",
+    "title": "POS Coffee Shop API",
     "version": "1.0.0",
-    "description": "Dokumentasi API untuk aplikasi Express TypeScript"
+    "description": "Dokumentasi API untuk aplikasi POS Coffee Shop"
   },
   "servers": [
     {
@@ -12,45 +12,47 @@
     }
   ],
   "paths": {
-    "/users": {
-      "get": {
-        "summary": "Mendapatkan daftar pengguna",
-        "tags": ["Users"],
-        "responses": {
-          "200": {
-            "description": "Daftar pengguna berhasil diambil",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": { "type": "integer" },
-                      "name": { "type": "string" }
-                    }
-                  }
-                }
+    "/api/auth/register": {
+      "post": {
+        "summary": "Mendaftarkan pengguna baru",
+        "tags": ["Register"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "required": ["name", "email", "password"]
               }
             }
           }
-        }
-      }
-    },
-    "/test": {
-      "get": {
-        "summary": "Test endpoint",
-        "tags": ["Test"],
+        },
         "responses": {
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "Pengguna berhasil didaftarkan",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "message": { "type": "string" }
-                  }
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "name": { "type": "string" }
+                      },
+                      "required": ["id", "name"]
+                    },
+                    "redirectUrl": { "type": "string" }
+                  },
+                  "required": ["success", "message", "data", "redirectUrl"]
                 }
               }
             }
