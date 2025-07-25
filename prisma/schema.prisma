@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,50 +7,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Customer {
-  id            Int       @id @default(autoincrement())
-  name          String    @db.VarChar(50)
-  email         String    @unique @db.VarChar(50)
-  password      String    @db.VarChar(255)
-  loyaltyPoints Int       @default(0)
-  isDeleted     Boolean   @default(false)
-  createdAt     DateTime  @default(now()) @db.Timestamp()
-  updatedAt     DateTime  @default(now()) @db.Timestamp()
-  vouchers      Voucher[] @relation("CustomerToVoucher")
+enum UserRole {
+  CUSTOMER
+  KASIR
+  ADMIN
 }
 
-model Kasir {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(50)
-  email     String   @unique @db.VarChar(50)
-  password  String   @db.VarChar(255)
-  shift     String   @db.VarChar(50)
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now()) @db.Timestamp()
-  updatedAt DateTime @default(now()) @db.Timestamp()
+model User {
+  id            Int             @id @default(autoincrement())
+  name          String
+  email         String          @unique
+  password      String
+  role          UserRole        @default(CUSTOMER)
+  isDeleted     Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  customerProfile CustomerProfile? @relation("UserToCustomerProfile")
+  kasirProfile    KasirProfile?    @relation("UserToKasirProfile")
+  adminProfile    AdminProfile?    @relation("UserToAdminProfile")
 }
 
-model Admin {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(50)
-  email       String   @unique @db.VarChar(50)
-  password    String   @db.VarChar(255)
-  permissions Json
-  isDeleted   Boolean  @default(false)
-  createdAt   DateTime @default(now()) @db.Timestamp()
-  updatedAt   DateTime @default(now()) @db.Timestamp()
+model CustomerProfile {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @unique
+  user          User     @relation("UserToCustomerProfile", fields: [userId], references: [id])
+  loyaltyPoints Int      @default(0)
+  phoneNumber   String?  // Opsional, nomor telepon pelanggan
+  profile       String?  // Opsional, Profile
+  // isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
-model Voucher {
-  id               Int       @id @default(autoincrement())
-  customerId       Int
-  customer         Customer  @relation("CustomerToVoucher", fields: [customerId], references: [id])
-  code             String    @unique @db.VarChar(50)
-  discount         Float
-  expiresAt        DateTime?
-  minPurchase      Float?
-  isOnlyForNewUser Boolean   @default(false)
-  terms            String?   @db.Text
-  createdAt        DateTime  @default(now()) @db.Timestamp()
-  isUsed           Boolean   @default(false)
+model KasirProfile {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @unique
+  user          User     @relation("UserToKasirProfile", fields: [userId], references: [id])
+  shift         String
+  // isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AdminProfile {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @unique
+  user          User     @relation("UserToAdminProfile", fields: [userId], references: [id])
+  permissions   Json?    // Opsional, hak akses admin dalam format JSON
+  // isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

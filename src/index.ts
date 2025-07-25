@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { httpLogger } from './middlewares/logger';
+import { httpLogger } from '@middlewares/logger';
 import swaggerUi from 'swagger-ui-express';
 import * as swaggerDocument from '@docs/openapi.json';
 import apiRouter from './routes/api';
