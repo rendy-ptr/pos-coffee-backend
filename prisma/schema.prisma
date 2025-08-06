@@ -7,54 +7,155 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enums
 enum UserRole {
   CUSTOMER
   KASIR
   ADMIN
 }
 
+enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderType {
+  DINE_IN
+  TAKE_AWAY
+}
+
+enum PaymentMethod {
+  CASH
+  DEBIT_CARD
+  CREDIT_CARD
+  E_WALLET
+}
+
+// Models
 model User {
-  id            Int             @id @default(autoincrement())
-  name          String
-  email         String          @unique
-  password      String
-  role          UserRole        @default(CUSTOMER)
-  isDeleted     Boolean         @default(false)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  customerProfile CustomerProfile? @relation("UserToCustomerProfile")
-  kasirProfile    KasirProfile?    @relation("UserToKasirProfile")
-  adminProfile    AdminProfile?    @relation("UserToAdminProfile")
-}
+  id           String    @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole  @default(CUSTOMER)
+  isActive     Boolean   @default(true)
 
-model CustomerProfile {
-  id            Int      @id @default(autoincrement())
-  userId        Int      @unique
-  user          User     @relation("UserToCustomerProfile", fields: [userId], references: [id])
+  // Customer specific
   loyaltyPoints Int      @default(0)
-  phoneNumber   String?  // Opsional, nomor telepon pelanggan
-  profile       String?  // Opsional, Profile
-  // isDeleted     Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  phone        String?
+  profilePicture String? // URL to profile picture
+
+  // Kasir specific
+  shiftStart   String?   // Format: "06:00" (HH:mm)
+  shiftEnd     String?   // Format: "18:00" (HH:mm)
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  customerOrders   Order[] @relation("CustomerOrders")
+  processedOrders  Order[] @relation("KasirOrders")
+
+  @@map("users")
 }
 
-model KasirProfile {
-  id            Int      @id @default(autoincrement())
-  userId        Int      @unique
-  user          User     @relation("UserToKasirProfile", fields: [userId], references: [id])
-  shift         String
-  // isDeleted     Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+
+  @@map("categories")
 }
 
-model AdminProfile {
-  id            Int      @id @default(autoincrement())
-  userId        Int      @unique
-  user          User     @relation("UserToAdminProfile", fields: [userId], references: [id])
-  permissions   Json?    // Opsional, hak akses admin dalam format JSON
-  // isDeleted     Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model Product {
+  id               String  @id @default(cuid())
+  name             String
+  description      String?
+  priceInCents     Int     // Harga dalam cents (Rp 15.000 = 1500000 cents)
+  categoryId       String
+  isActive         Boolean @default(true)
+
+  // Simple inventory
+  stock            Int     @default(0)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  category         Category     @relation(fields: [categoryId], references: [id])
+  orderItems       OrderItem[]
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("products")
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique // Format: ORD20250106001
+
+  // Customer info (nullable untuk walk-in)
+  customerId      String?
+  customerName    String?       // Untuk walk-in customer
+  customerPhone   String?
+
+  // Order details
+  kasirId         String        // Yang input order
+  orderType       OrderType     @default(DINE_IN)
+  status          OrderStatus   @default(PENDING)
+  tableNumber     String?       // Hanya untuk DINE_IN
+
+  // Financial (dalam cents)
+  subtotalInCents Int
+  taxInCents      Int           @default(0)
+  discountInCents Int           @default(0)
+  totalInCents    Int
+
+  // Payment
+  paymentMethod   PaymentMethod
+  paidAt          DateTime?
+
+  notes           String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  completedAt     DateTime?
+
+  // Relations
+  customer        User?         @relation("CustomerOrders", fields: [customerId], references: [id])
+  kasir           User          @relation("KasirOrders", fields: [kasirId], references: [id])
+  orderItems      OrderItem[]
+
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                String  @id @default(cuid())
+  orderId           String
+  productId         String
+
+  quantity          Int
+  unitPriceInCents  Int     // Harga saat order dibuat
+  totalPriceInCents Int     // quantity × unitPrice
+
+  notes             String? // "Extra shot", "Less sugar", dll
+
+  // Relations
+  order             Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product           Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
 }

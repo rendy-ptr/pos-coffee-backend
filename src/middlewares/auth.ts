@@ -1,10 +1,9 @@
 import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
-import { baseLogger } from '../middlewares/logger';
-import type { UserRole } from '@prisma/client';
-import { AuthRequest } from '../types/auth';
-import { JwtPayload } from '../types/express';
+import { baseLogger } from './logger';
+import { AuthRequest, JwtPayload } from '../types/auth';
+import { UserRole } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -40,25 +39,41 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
     try {
       const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
 
+      // Type guard untuk memastikan decoded adalah JwtPayload
+      if (
+        typeof decoded === 'string' ||
+        !decoded.id ||
+        !decoded.email ||
+        !decoded.role
+      ) {
+        baseLogger.warn('Akses ditolak: Token tidak valid atau tidak lengkap');
+        res.status(401).json({
+          success: false,
+          message: 'Token tidak valid',
+          errorCode: 'INVALID_TOKEN',
+        });
+        return;
+      }
+
       const user = await prisma.user.findUnique({
         where: {
           id: decoded.id,
-          isDeleted: false,
+          isActive: true,
         },
-        include: {
-          customerProfile: true,
-          kasirProfile: true,
-          adminProfile: true,
+        select: {
+          id: true,
+          email: true,
+          role: true,
         },
       });
 
       if (!user) {
         baseLogger.warn(
-          `Akses ditolak: Pengguna tidak ditemukan atau dihapus - ID: ${decoded.id}`
+          `Akses ditolak: Pengguna tidak ditemukan atau tidak aktif - ID: ${decoded.id}`
         );
         res.status(401).json({
           success: false,
-          message: 'Pengguna tidak valid',
+          message: 'Pengguna tidak valid atau tidak aktif',
           errorCode: 'INVALID_USER',
         });
         return;
@@ -76,51 +91,19 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
         return;
       }
 
-      if (user.role === 'CUSTOMER' && !user.customerProfile) {
-        baseLogger.warn(
-          `Akses ditolak: Profil pelanggan tidak ditemukan - ID: ${decoded.id}`
-        );
-        res.status(403).json({
-          success: false,
-          message: 'Profil pelanggan tidak valid',
-          errorCode: 'INVALID_PROFILE',
-        });
-        return;
-      }
-      if (user.role === 'KASIR' && !user.kasirProfile) {
-        baseLogger.warn(
-          `Akses ditolak: Profil kasir tidak ditemukan - ID: ${decoded.id}`
-        );
-        res.status(403).json({
-          success: false,
-          message: 'Profil kasir tidak valid',
-          errorCode: 'INVALID_PROFILE',
-        });
-        return;
-      }
-      if (user.role === 'ADMIN' && !user.adminProfile) {
-        baseLogger.warn(
-          `Akses ditolak: Profil admin tidak ditemukan - ID: ${decoded.id}`
-        );
-        res.status(403).json({
-          success: false,
-          message: 'Profil admin tidak valid',
-          errorCode: 'INVALID_PROFILE',
-        });
-        return;
-      }
-
       req.user = {
         id: user.id,
+        email: user.email,
+        role: user.role,
       };
 
       baseLogger.info(
-        `Autentikasi berhasil | user-id: ${user.id}, role: ${user.role}`
+        `Autentikasi berhasil | user-id: ${user.id}, role: ${user.role}, email: ${user.email}`
       );
       next();
     } catch (error) {
       baseLogger.error('Error selama autentikasi', {
-        token,
+        token: token.slice(0, 10) + '...', // Jangan log seluruh token
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       });
