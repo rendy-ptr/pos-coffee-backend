@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { baseLogger } from '@/middlewares/logger';
 
 import { registerSchema, loginSchema } from '../../config/zodSchemas';
-import type { JwtPayload } from '../../types/auth';
+import type { JwtPayload, AuthRequest } from '../../types/auth';
 import { UserRole } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -169,6 +169,47 @@ export const loginAuth = async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     baseLogger.error('Error during login', {
       email,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    res.status(500).json({
+      success: false,
+      message:
+        process.env.NODE_ENV === 'development'
+          ? String(error)
+          : 'Terjadi kesalahan server',
+    });
+  }
+};
+
+export const logoutAuth = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+
+    // Clear the token cookie
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    // Console Response
+    baseLogger.info(`Logout Berhasil| user-id: ${userId || 'unknown'}`);
+
+    // Send response
+    res.status(200).json({
+      success: true,
+      message: 'Logout Berhasil',
+      data: {
+        redirectUrl: '/auth/login',
+      },
+    });
+  } catch (error) {
+    baseLogger.error('Error during logout', {
+      userId: req.user?.id || 'unknown',
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });

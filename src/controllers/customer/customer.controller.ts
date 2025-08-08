@@ -57,7 +57,7 @@ export const customerDashboard = async (
 
     res.status(200).json({
       success: true,
-      message: 'Selamat datang di dashboard pelanggan',
+      message: 'Selamat datang di dashboard',
       data: {
         id: user.id,
         email: user.email,
