@@ -16,7 +16,9 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
     const token = req.cookies.token;
 
     if (!token) {
-      baseLogger.warn('Akses ditolak: Token tidak ditemukan');
+      baseLogger.warn(
+        `Akses ditolak: Token tidak ditemukan | method: ${req.method} | url: ${req.originalUrl} | IP: ${req.ip}`
+      );
       res.status(401).json({
         success: false,
         message: 'Token diperlukan',
@@ -39,7 +41,6 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
     try {
       const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
 
-      // Type guard untuk memastikan decoded adalah JwtPayload
       if (
         typeof decoded === 'string' ||
         !decoded.id ||
@@ -102,6 +103,16 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
       );
       next();
     } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        baseLogger.warn('Token expired');
+        res.status(401).json({
+          success: false,
+          message: 'Token kedaluwarsa',
+          errorCode: 'TOKEN_EXPIRED',
+        });
+        return;
+      }
+
       baseLogger.error('Error selama autentikasi', {
         token: token.slice(0, 10) + '...', // Jangan log seluruh token
         error: error instanceof Error ? error.message : String(error),

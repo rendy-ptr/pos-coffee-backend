@@ -1,3 +1,5 @@
+// ===== base.prismapart =====
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,7 +9,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Enums
+
+// ===== enums.prismapart =====
+
 enum UserRole {
   CUSTOMER
   KASIR
@@ -34,106 +38,111 @@ enum PaymentMethod {
   E_WALLET
 }
 
-// Models
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+}
+
+enum TableLocation {
+  INDOOR
+  OUTDOOR
+}
+
+
+// ===== user.prismapart =====
+
 model User {
-  id           String    @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         UserRole  @default(CUSTOMER)
-  isActive     Boolean   @default(true)
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  password       String
+  role           UserRole @default(CUSTOMER)
+  isActive       Boolean  @default(true)
+  profilePicture String?
+  phone          String?
 
-  // Customer specific
-  loyaltyPoints Int      @default(0)
-  phone        String?
-  profilePicture String? // URL to profile picture
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // Kasir specific
-  shiftStart   String?   // Format: "06:00" (HH:mm)
-  shiftEnd     String?   // Format: "18:00" (HH:mm)
-
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  // Relations
-  customerOrders   Order[] @relation("CustomerOrders")
-  processedOrders  Order[] @relation("KasirOrders")
+  customerProfile   CustomerProfile?
+  kasirProfile      KasirProfile?
+  adminProfile      AdminProfile?
+  customerOrders    Order[]          @relation("CustomerOrders")
+  processedOrders   Order[]          @relation("KasirOrders")
+  createdMenus      Menu[]           @relation("AdminMenus")
+  createdCategories Category[]       @relation("AdminCategories")
+  createdTables     Table[]           @relation("AdminTables")
 
   @@map("users")
 }
 
-model Category {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  description String?
-  isActive    Boolean   @default(true)
+model CustomerProfile {
+  id            String @id @default(cuid())
+  loyaltyPoints Int    @default(0)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  @@map("customer_profiles")
+}
+
+model KasirProfile {
+  id         String @id @default(cuid())
+  userId     String @unique
+  shiftStart String
+  shiftEnd   String
+  todaySales Int    @default(0)
+  todayOrder Int    @default(0)
+  totalOrder Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("kasir_profiles")
+}
+
+model AdminProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admin_profiles")
+}
+
+
+// ===== order.prismapart =====
+
+model Order {
+  id          String @id @default(cuid())
+  orderNumber String @unique
+
+  customerId    String?
+  customerName  String?
+  customerPhone String?
+
+  kasirId     String
+  orderType   OrderType   @default(DINE_IN)
+  status      OrderStatus @default(PENDING)
+  tableNumber String?
+
+  subtotalInCents Int
+  taxInCents      Int @default(0)
+  discountInCents Int @default(0)
+  totalInCents    Int
+
+  paymentMethod PaymentMethod?
+  paidAt        DateTime?
+  notes         String?
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
 
-  products    Product[]
-
-  @@map("categories")
-}
-
-model Product {
-  id               String  @id @default(cuid())
-  name             String
-  description      String?
-  priceInCents     Int     // Harga dalam cents (Rp 15.000 = 1500000 cents)
-  categoryId       String
-  isActive         Boolean @default(true)
-
-  // Simple inventory
-  stock            Int     @default(0)
-
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  // Relations
-  category         Category     @relation(fields: [categoryId], references: [id])
-  orderItems       OrderItem[]
-
-  @@index([categoryId])
-  @@index([isActive])
-  @@map("products")
-}
-
-model Order {
-  id              String        @id @default(cuid())
-  orderNumber     String        @unique // Format: ORD20250106001
-
-  // Customer info (nullable untuk walk-in)
-  customerId      String?
-  customerName    String?       // Untuk walk-in customer
-  customerPhone   String?
-
-  // Order details
-  kasirId         String        // Yang input order
-  orderType       OrderType     @default(DINE_IN)
-  status          OrderStatus   @default(PENDING)
-  tableNumber     String?       // Hanya untuk DINE_IN
-
-  // Financial (dalam cents)
-  subtotalInCents Int
-  taxInCents      Int           @default(0)
-  discountInCents Int           @default(0)
-  totalInCents    Int
-
-  // Payment
-  paymentMethod   PaymentMethod
-  paidAt          DateTime?
-
-  notes           String?
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  completedAt     DateTime?
-
-  // Relations
-  customer        User?         @relation("CustomerOrders", fields: [customerId], references: [id])
-  kasir           User          @relation("KasirOrders", fields: [kasirId], references: [id])
-  orderItems      OrderItem[]
+  customer   User?       @relation("CustomerOrders", fields: [customerId], references: [id])
+  kasir      User        @relation("KasirOrders", fields: [kasirId], references: [id])
+  orderItems OrderItem[]
 
   @@index([orderNumber])
   @@index([status])
@@ -144,18 +153,82 @@ model Order {
 model OrderItem {
   id                String  @id @default(cuid())
   orderId           String
-  productId         String
-
+  menuId            String
   quantity          Int
-  unitPriceInCents  Int     // Harga saat order dibuat
-  totalPriceInCents Int     // quantity × unitPrice
+  unitPriceInCents  Int
+  totalPriceInCents Int
+  notes             String?
 
-  notes             String? // "Extra shot", "Less sugar", dll
-
-  // Relations
-  order             Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product           Product @relation(fields: [productId], references: [id])
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menu  Menu  @relation(fields: [menuId], references: [id])
 
   @@index([orderId])
   @@map("order_items")
+}
+
+
+// ===== menu.prismapart =====
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  icon        String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  menus       Menu[]
+  createdBy   User   @relation("AdminCategories", fields: [createdById], references: [id])
+  createdById String
+
+  @@map("categories")
+}
+
+model Menu {
+  id                String  @id @default(cuid())
+  imageUrl          String
+  name              String  @unique
+  stock             Int     @default(0)
+  productionCapital Int
+  sellingPrice      Int
+  profit            Int     @default(0)
+  soldCount         Int     @default(0)
+  isActive          Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category    Category    @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  orderItems  OrderItem[]
+  createdBy   User        @relation("AdminMenus", fields: [createdById], references: [id])
+  createdById String
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("menus")
+}
+
+
+// ===== table.prismapart =====
+
+model Table {
+  id            String        @id @default(cuid())
+  number        Int           @unique
+  capacity      Int
+  status        TableStatus   @default(AVAILABLE)
+  currentGuests Int           @default(0)
+  location      TableLocation
+  lastCleaned   DateTime      @default(now())
+  reservedBy    String?
+  reservedTime  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy   User   @relation("AdminTables", fields: [createdById], references: [id])
+  createdById String
+
+  @@map("tables")
 }

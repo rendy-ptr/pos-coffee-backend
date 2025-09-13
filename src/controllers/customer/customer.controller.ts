@@ -31,9 +31,11 @@ export const customerDashboard = async (
         id: true,
         email: true,
         name: true,
+        role: true,
         loyaltyPoints: true,
-        phone: true,
+        phoneCustomer: true,
         profilePicture: true,
+        createdAt: true,
       },
     });
 
@@ -57,15 +59,16 @@ export const customerDashboard = async (
 
     res.status(200).json({
       success: true,
-      message: 'Selamat datang di dashboard',
+      message: `Selamat datang di dashboard ${user.name}`,
       data: {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: req.user.role,
+        role: user.role,
         loyaltyPoints: user.loyaltyPoints,
-        phoneNumber: user.phone,
+        phoneNumber: user.phoneCustomer,
         profilePicture: user.profilePicture,
+        createdAt: user.createdAt,
         // orders,
       },
     });

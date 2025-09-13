@@ -1,0 +1,57 @@
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  password       String
+  role           UserRole @default(CUSTOMER)
+  isActive       Boolean  @default(true)
+  profilePicture String?
+  phone          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customerProfile   CustomerProfile?
+  kasirProfile      KasirProfile?
+  adminProfile      AdminProfile?
+  customerOrders    Order[]          @relation("CustomerOrders")
+  processedOrders   Order[]          @relation("KasirOrders")
+  createdMenus      Menu[]           @relation("AdminMenus")
+  createdCategories Category[]       @relation("AdminCategories")
+  createdTables     Table[]           @relation("AdminTables")
+
+  @@map("users")
+}
+
+model CustomerProfile {
+  id            String @id @default(cuid())
+  loyaltyPoints Int    @default(0)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  @@map("customer_profiles")
+}
+
+model KasirProfile {
+  id         String @id @default(cuid())
+  userId     String @unique
+  shiftStart String
+  shiftEnd   String
+  todaySales Int    @default(0)
+  todayOrder Int    @default(0)
+  totalOrder Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("kasir_profiles")
+}
+
+model AdminProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admin_profiles")
+}

@@ -1,21 +1,18 @@
 import type { Response } from 'express';
+import { PrismaClient } from '@prisma/client';
 import { baseLogger } from '../../middlewares/logger';
 import { AuthRequest } from '../../types/auth';
-import { prisma } from '@/utils/prisma';
-import type { ApiResponse } from '@/types/ApiResponse';
-import type { Prisma } from '@prisma/client';
 
-type AdminWithProfile = Prisma.UserGetPayload<{
-  include: { adminProfile: true };
-}>;
+const prisma = new PrismaClient();
 
-export const adminDashboard = async (
+export const kasirDashboard = async (
   req: AuthRequest,
-  res: Response<ApiResponse<AdminWithProfile>>
-) => {
+  res: Response
+): Promise<void> => {
   try {
+    // Pastikan req.user ada (meskipun middleware seharusnya menjamin ini)
     if (!req.user) {
-      baseLogger.error('User Admin tidak ditemukan');
+      baseLogger.error('req.user tidak ditemukan di kasirDashboard');
       res.status(401).json({
         success: false,
         message: 'Autentikasi gagal',
@@ -24,14 +21,20 @@ export const adminDashboard = async (
       return;
     }
 
-    const user = await prisma.user.findFirst({
+    // Ambil data pengguna berdasarkan id dari req.user
+    const user = await prisma.user.findUnique({
       where: {
         id: req.user.id,
         isActive: true,
-        role: 'ADMIN',
       },
-      include: {
-        adminProfile: true,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        shiftStart: true,
+        shiftEnd: true,
+        phoneKasir: true,
       },
     });
 
@@ -44,22 +47,22 @@ export const adminDashboard = async (
       });
       return;
     }
-    if (!user.adminProfile) {
-      res.status(403).json({
-        success: false,
-        message: 'Hanya admin yang bisa mengakses dashboard ini',
-        errorCode: 'FORBIDDEN',
-      });
-      return;
-    }
 
     res.status(200).json({
       success: true,
       message: `Selamat datang di dashboard ${user.name}`,
-      data: user,
+      data: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        shiftStart: user.shiftStart,
+        shiftEnd: user.shiftEnd,
+        phoneKasir: user.phoneKasir,
+      },
     });
   } catch (error) {
-    baseLogger.error('Error memuat dashboard pelanggan', {
+    baseLogger.error('Error memuat dashboard kasir', {
       userId: req.user?.id,
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,

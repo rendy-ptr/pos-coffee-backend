@@ -1,62 +1,82 @@
 import type { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { hashPassword, comparePassword } from '@/utils/hash';
 import jwt from 'jsonwebtoken';
 import { baseLogger } from '@/middlewares/logger';
+import { prisma } from '@/utils/prisma';
 
-import { registerSchema, loginSchema } from '../../config/zodSchemas';
+import { Prisma } from '@prisma/client';
+import { registerSchema, loginSchema } from '../../schemas/register.schema';
 import type { JwtPayload, AuthRequest } from '../../types/auth';
-import { UserRole } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { ApiResponse } from '@/types/ApiResponse';
 
 export const registerCustomer = async (
   req: Request,
-  res: Response
-): Promise<void> => {
-  //  Validate Request Body
+  res: Response<
+    ApiResponse<{
+      id: string;
+      name: string;
+      email: string;
+      role: string;
+      redirectUrl: string;
+    }>
+  >
+) => {
   const result = registerSchema.safeParse(req.body);
   if (!result.success) {
-    res
-      .status(400)
-      .json({ success: false, message: result.error.issues[0].message });
+    res.status(400).json({
+      success: false,
+      message: result.error.issues[0].message,
+      errorCode: 'INVALID_INPUT',
+    });
     return;
   }
   const { name, email, password } = result.data;
 
   try {
-    // Check Email Duplicate
     const existingUser = await prisma.user.findFirst({
       where: { email },
     });
     if (existingUser) {
-      res
-        .status(400)
-        .json({ success: false, message: 'Email Telah Terdaftar' });
+      res.status(400).json({
+        success: false,
+        message: 'Email Telah Terdaftar',
+        errorCode: 'EMAIL_TAKEN',
+      });
       return;
     }
 
-    // Hash Password
     const hashedPassword = await hashPassword(password);
 
-    // Create Customer
-    const newCustomer = await prisma.user.create({
-      data: {
-        name,
-        email,
-        passwordHash: hashedPassword,
-        loyaltyPoints: 10,
-      },
+    // Create user dan customer profile dalam transaksi
+    const newCustomer = await prisma.$transaction(async tx => {
+      const user = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+        },
+      });
+
+      await tx.customerProfile.create({
+        data: {
+          userId: user.id,
+          loyaltyPoints: 10,
+        },
+      });
+
+      return user;
     });
 
-    // Console Response
-    baseLogger.info(`Registrasi Berhasil| customer-id: ${newCustomer.id}`);
+    baseLogger.info(`Registrasi Berhasil | customer-id: ${newCustomer.id}`);
 
-    // Send Response
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       message: 'Registrasi Berhasil',
       data: {
+        id: newCustomer.id,
+        name: newCustomer.name,
+        email: newCustomer.email,
+        role: newCustomer.role,
         redirectUrl: '/auth/login',
       },
     });
@@ -66,23 +86,42 @@ export const registerCustomer = async (
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      res.status(400).json({
+        success: false,
+        message: 'Email sudah digunakan',
+        errorCode: 'EMAIL_TAKEN',
+      });
+      return;
+    }
     res.status(500).json({
       success: false,
       message:
         process.env.NODE_ENV === 'development'
           ? String(error)
           : 'Terjadi kesalahan server',
+      errorCode: 'SERVER_ERROR',
     });
   }
 };
 
-export const loginAuth = async (req: Request, res: Response): Promise<void> => {
+export const loginAuth = async (
+  req: Request,
+  res: Response<
+    ApiResponse<{ id: string; name: string; role: string; redirectUrl: string }>
+  >
+) => {
   // Validate request body
   const result = loginSchema.safeParse(req.body);
   if (!result.success) {
-    res
-      .status(400)
-      .json({ success: false, message: result.error.issues[0].message });
+    res.status(400).json({
+      success: false,
+      message: result.error.issues[0].message,
+      errorCode: 'INVALID_INPUT',
+    });
     return;
   }
   const { email, password } = result.data;
@@ -91,9 +130,11 @@ export const loginAuth = async (req: Request, res: Response): Promise<void> => {
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) {
     baseLogger.error('JWT Tidak Terdeteksi');
-    res
-      .status(500)
-      .json({ success: false, message: 'Konfigurasi Server Salah' });
+    res.status(500).json({
+      success: false,
+      message: 'Konfigurasi Server Salah',
+      errorCode: 'JWT_CONFIG_ERROR',
+    });
     return;
   }
 
@@ -104,19 +145,35 @@ export const loginAuth = async (req: Request, res: Response): Promise<void> => {
         email,
         isActive: true,
       },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        password: true,
+      },
     });
-    // Check login
+
     if (!user) {
-      res.status(401).json({ message: 'Email Tidak Terdaftar' });
+      res.status(401).json({
+        success: false,
+        message: 'Email Tidak Terdaftar',
+        errorCode: 'INVALID_CREDENTIALS',
+      });
       return;
     }
 
     // Check Password
-    const isPasswordValid = await comparePassword(password, user.passwordHash);
+    const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
-      res.status(401).json({ message: 'Email Atau Password Salah' });
+      res.status(401).json({
+        success: false,
+        message: 'Email Atau Password Salah',
+        errorCode: 'INVALID_CREDENTIALS',
+      });
       return;
     }
+
     // Generate JWT token
     const token = jwt.sign(
       {
@@ -136,23 +193,8 @@ export const loginAuth = async (req: Request, res: Response): Promise<void> => {
       maxAge: 3600 * 1000,
     });
 
-    const profileMap: { [key in UserRole]: () => object } = {
-      CUSTOMER: () => ({
-        loyaltyPoints: user.loyaltyPoints,
-        phoneNumber: user?.phone,
-        profilePicture: user?.profilePicture,
-      }),
-      KASIR: () => ({
-        shiftStart: user.shiftStart,
-        shiftEnd: user.shiftEnd,
-      }),
-      ADMIN: () => ({}),
-    };
-
-    const profileData = profileMap[user.role]();
-
-    // Console Response
-    baseLogger.info(`Login Berhasil| user-id: ${user.id}`);
+    // Log success
+    baseLogger.info(`Login Berhasil | user-id: ${user.id}`);
 
     // Send response
     res.status(200).json({
@@ -162,7 +204,6 @@ export const loginAuth = async (req: Request, res: Response): Promise<void> => {
         id: user.id,
         name: user.name,
         role: user.role,
-        profile: profileData,
         redirectUrl: `/dashboard/${user.role.toLowerCase()}`,
       },
     });
@@ -178,47 +219,47 @@ export const loginAuth = async (req: Request, res: Response): Promise<void> => {
         process.env.NODE_ENV === 'development'
           ? String(error)
           : 'Terjadi kesalahan server',
+      errorCode: 'SERVER_ERROR',
     });
   }
 };
 
 export const logoutAuth = async (
+  req: Request,
+  res: Response<ApiResponse<null>>
+) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+
+  res.status(200).json({
+    success: true,
+    message: 'Logout berhasil',
+    data: null,
+  });
+};
+
+export const authMe = async (
   req: AuthRequest,
-  res: Response
-): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-
-    // Clear the token cookie
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-    });
-
-    // Console Response
-    baseLogger.info(`Logout Berhasil| user-id: ${userId || 'unknown'}`);
-
-    // Send response
-    res.status(200).json({
-      success: true,
-      message: 'Logout Berhasil',
-      data: {
-        redirectUrl: '/auth/login',
-      },
-    });
-  } catch (error) {
-    baseLogger.error('Error during logout', {
-      userId: req.user?.id || 'unknown',
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-    res.status(500).json({
+  res: Response<ApiResponse<{ id: string; email: string; role: string }>>
+) => {
+  if (!req.user) {
+    res.status(401).json({
       success: false,
-      message:
-        process.env.NODE_ENV === 'development'
-          ? String(error)
-          : 'Terjadi kesalahan server',
+      message: 'Tidak ter-autentikasi',
     });
+    return;
   }
+  baseLogger.info(`Ter-Autentikasi User ID: ${req.user.id}`);
+  res.json({
+    success: true,
+    message: 'User ter-autentikasi',
+    data: {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role,
+    },
+  });
 };
