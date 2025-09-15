@@ -231,3 +231,50 @@ export const editTable = async (
     });
   }
 };
+
+export const deleteTable = async (
+  req: AuthRequest,
+  res: Response<ApiResponse<null>>
+) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: 'User Admin tidak ditemukan pada request',
+      });
+      return;
+    }
+    const table = await prisma.table.findUnique({ where: { id } });
+    if (!table) {
+      res.status(404).json({
+        success: false,
+        message: 'Meja tidak ditemukan',
+      });
+      return;
+    }
+    await prisma.table.delete({ where: { id } });
+    baseLogger.info(
+      `Meja dihapus: ${table.number} oleh ${user.role} dengan email ${user.email}`
+    );
+    res.status(200).json({
+      success: true,
+      message: `Meja ${table.number} berhasil dihapus`,
+      data: null,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      baseLogger.error('Error Menghapus Meja', {
+        error: error.message,
+        stack: error.stack,
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan saat menghapus meja',
+      errorCode: 'SERVER_ERROR',
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};

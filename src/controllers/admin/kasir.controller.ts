@@ -5,7 +5,7 @@ import { baseLogger } from '@/middlewares/logger';
 import { prisma } from '@/utils/prisma';
 import type { ApiResponse } from '@/types/ApiResponse';
 import type { Prisma } from '@prisma/client';
-import { CreateKasirSchema } from '@/schemas/kasir.schema';
+import { CreateKasirSchema, editKasirSchema } from '@/schemas/kasir.schema';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 
@@ -157,105 +157,94 @@ export const getKasir = async (
   }
 };
 
-// export const editKasir = async (
-//   req: AuthRequest,
-//   res: Response<ApiResponse<null>>
-// ) => {
-//   try {
-//     const { id } = req.params;
-//     const user = req.user;
-//     if (!user) {
-//       res.status(401).json({
-//         success: false,
-//         message: 'User Admin tidak ditemukan pada request',
-//       });
-//       return;
-//     }
+export const editKasir = async (
+  req: AuthRequest,
+  res: Response<ApiResponse<null>>
+) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: 'User Admin tidak ditemukan pada request',
+      });
+      return;
+    }
 
-//     if (!id) {
-//       res.status(400).json({
-//         success: false,
-//         message: 'ID kasir wajib ada',
-//       });
-//       return;
-//     }
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: 'ID kasir wajib ada',
+      });
+      return;
+    }
 
-//     const existingKasir = await prisma.user.findUnique({
-//       where: { id },
-//     });
+    const existingKasir = await prisma.user.findUnique({
+      where: { id },
+    });
 
-//     if (!existingKasir) {
-//       res.status(404).json({
-//         success: false,
-//         message: 'Kasir tidak ditemukan',
-//       });
-//       return;
-//     }
+    if (!existingKasir) {
+      res.status(404).json({
+        success: false,
+        message: 'Kasir tidak ditemukan',
+      });
+      return;
+    }
 
-//     const parsed = editKasirSchema.safeParse(req.body);
+    const parsed = editKasirSchema.safeParse(req.body);
 
-//     if (!parsed.success) {
-//       res.status(400).json({
-//         success: false,
-//         message: 'Validasi gagal',
-//         errors: parsed.error.issues,
-//       });
-//       return;
-//     }
+    if (!parsed.success) {
+      res.status(400).json({
+        success: false,
+        message: 'Validasi gagal',
+        errors: parsed.error.issues,
+      });
+      return;
+    }
 
-//     const payload = parsed.data;
+    const payload = parsed.data;
 
-//     // handle password
-//     let finalPasswordHash = existingKasir.password;
-//     if (
-//       payload.password &&
-//       payload.password.trim() !== '' &&
-//       !(await comparePassword(payload.password, existingKasir.password))
-//     ) {
-//       finalPasswordHash = await hashPassword(payload.password);
-//     }
+    const updatedKasir = await prisma.user.update({
+      where: { id },
+      data: {
+        name: payload.name,
+        email: payload.email,
+        phone: payload.phone,
+        isActive: payload.isActive,
+        profilePicture: payload.profilePicture,
+        kasirProfile: {
+          update: {
+            shiftStart: payload.shiftStart,
+            shiftEnd: payload.shiftEnd,
+          },
+        },
+      },
+    });
 
-//     const updatedKasir = await prisma.user.update({
-//       where: { id },
-//       data: {
-//         name: payload.name,
-//         email: payload.email,
-//         phone: payload.phone,
-//         isActive: payload.isActive,
-//         password: finalPasswordHash,
-//         profilePicture: payload.profilePicture,
-//         kasirProfile: {
-//           update: {
-//             shiftStart: payload.shiftStart,
-//             shiftEnd: payload.shiftEnd,
-//           },
-//         },
-//       },
-//     });
+    baseLogger.info(`Kasir di update: ${updatedKasir.name}`);
 
-//     baseLogger.info(`Kasir di update: ${updatedKasir.name}`);
+    res.status(200).json({
+      success: true,
+      message: `Kasir ${updatedKasir.name} berhasil diperbarui`,
+      data: null,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      baseLogger.error('Error Mengedit Kasir', {
+        error: error.message,
+        stack: error.stack,
+      });
+    }
 
-//     res.status(200).json({
-//       success: true,
-//       message: `Kasir ${updatedKasir.name} berhasil diperbarui`,
-//       data: null,
-//     });
-//   } catch (error) {
-//     if (error instanceof Error) {
-//       baseLogger.error('Error Mengedit Kasir', {
-//         error: error.message,
-//         stack: error.stack,
-//       });
-//     }
-
-//     res.status(500).json({
-//       success: false,
-//       message: 'Terjadi kesalahan saat mengedit kasir',
-//       errorCode: 'SERVER_ERROR',
-//       error: error instanceof Error ? error.message : String(error),
-//     });
-//   }
-// };
+    res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan saat mengedit kasir',
+      errorCode: 'SERVER_ERROR',
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
 
 export const deleteKasir = async (
   req: AuthRequest,

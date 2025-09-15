@@ -16,12 +16,13 @@ import { UserRole } from '@prisma/client';
 import {
   createKasir,
   deleteKasir,
-  // editKasir,
+  editKasir,
   getKasir,
   refreshKasirId,
 } from '@/controllers/admin/kasir.controller';
 import {
   createTable,
+  deleteTable,
   editTable,
   getTables,
 } from '@/controllers/admin/table.controller';
@@ -51,7 +52,7 @@ adminRouter.delete('/menu/:id', authMiddleware([UserRole.ADMIN]), deleteMenu);
 // Kasir Routes
 adminRouter.post('/kasir', authMiddleware([UserRole.ADMIN]), createKasir);
 adminRouter.get('/kasir', authMiddleware([UserRole.ADMIN]), getKasir);
-// adminRouter.patch('/kasir/:id', authMiddleware([UserRole.ADMIN]), editKasir);
+adminRouter.patch('/kasir/:id', authMiddleware([UserRole.ADMIN]), editKasir);
 adminRouter.delete('/kasir/:id', authMiddleware([UserRole.ADMIN]), deleteKasir);
 adminRouter.get('/kasir/:id', authMiddleware([UserRole.ADMIN]), refreshKasirId);
 
@@ -59,5 +60,6 @@ adminRouter.get('/kasir/:id', authMiddleware([UserRole.ADMIN]), refreshKasirId);
 adminRouter.post('/table', authMiddleware([UserRole.ADMIN]), createTable);
 adminRouter.get('/table', authMiddleware([UserRole.ADMIN]), getTables);
 adminRouter.patch('/table/:id', authMiddleware([UserRole.ADMIN]), editTable);
+adminRouter.delete('/table/:id', authMiddleware([UserRole.ADMIN]), deleteTable);
 
 export default adminRouter;
