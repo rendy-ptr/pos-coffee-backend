@@ -70,7 +70,7 @@ export const createMenu = async (
 
     res.status(500).json({
       success: false,
-      message: 'Terjadi kesalahan saat Membuat Kategori',
+      message: 'Terjadi kesalahan saat Membuat Reward',
       errorCode: 'SERVER_ERROR',
       error: error instanceof Error ? error.message : String(error),
     });

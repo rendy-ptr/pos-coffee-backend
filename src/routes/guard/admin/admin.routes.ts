@@ -26,6 +26,12 @@ import {
   editTable,
   getTables,
 } from '@/controllers/admin/table.controller';
+import {
+  createReward,
+  deleteReward,
+  editReward,
+  getRewards,
+} from '@/controllers/admin/reward.controller';
 
 const adminRouter = express.Router();
 
@@ -61,5 +67,15 @@ adminRouter.post('/table', authMiddleware([UserRole.ADMIN]), createTable);
 adminRouter.get('/table', authMiddleware([UserRole.ADMIN]), getTables);
 adminRouter.patch('/table/:id', authMiddleware([UserRole.ADMIN]), editTable);
 adminRouter.delete('/table/:id', authMiddleware([UserRole.ADMIN]), deleteTable);
+
+// Reward Routes
+adminRouter.post('/reward', authMiddleware([UserRole.ADMIN]), createReward);
+adminRouter.get('/reward', authMiddleware([UserRole.ADMIN]), getRewards);
+adminRouter.patch('/reward/:id', authMiddleware([UserRole.ADMIN]), editReward);
+adminRouter.delete(
+  '/reward/:id',
+  authMiddleware([UserRole.ADMIN]),
+  deleteReward
+);
 
 export default adminRouter;

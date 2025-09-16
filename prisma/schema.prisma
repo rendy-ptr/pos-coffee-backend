@@ -50,6 +50,11 @@ enum TableLocation {
   OUTDOOR
 }
 
+enum RewardType {
+  REWARD
+  VOUCHER
+}
+
 
 // ===== user.prismapart =====
 
@@ -73,7 +78,8 @@ model User {
   processedOrders   Order[]          @relation("KasirOrders")
   createdMenus      Menu[]           @relation("AdminMenus")
   createdCategories Category[]       @relation("AdminCategories")
-  createdTables     Table[]           @relation("AdminTables")
+  createdTables     Table[]          @relation("AdminTables")
+  createdRewards    Reward[]         @relation("AdminRewards")
 
   @@map("users")
 }
@@ -231,4 +237,35 @@ model Table {
   createdById String
 
   @@map("tables")
+}
+
+
+// ===== reward.prismapart =====
+
+model Reward {
+  id          String     @id @default(cuid())
+  title       String     @unique
+  type        RewardType // REWARD atau VOUCHER
+  description String?
+
+  // Status aktif/tidak aktif
+  isActive    Boolean    @default(true)
+
+  // Khusus REWARD
+  points      Int?
+
+  // Khusus VOUCHER
+  code        String?    @unique
+  expiryDate  DateTime?
+
+  // Berlaku untuk keduanya
+  conditions  String?
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  createdBy   User       @relation("AdminRewards", fields: [createdById], references: [id])
+  createdById String
+
+  @@map("rewards")
 }

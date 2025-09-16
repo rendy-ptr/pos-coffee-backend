@@ -9,7 +9,7 @@ export const CreateKasirSchema = z.object({
   shiftEnd: z.string().min(1, 'Waktu selesai shift wajib diisi'),
   isActive: z.coerce.boolean(),
 });
-export type CreateKasirInputPayload = z.infer<typeof CreateKasirSchema>;
+export type CreateKasirSchema = z.infer<typeof CreateKasirSchema>;
 
 export const editKasirSchema = CreateKasirSchema.partial();
 export type UpdateKasirInputPayload = z.infer<typeof editKasirSchema>;

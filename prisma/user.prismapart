@@ -18,7 +18,8 @@ model User {
   processedOrders   Order[]          @relation("KasirOrders")
   createdMenus      Menu[]           @relation("AdminMenus")
   createdCategories Category[]       @relation("AdminCategories")
-  createdTables     Table[]           @relation("AdminTables")
+  createdTables     Table[]          @relation("AdminTables")
+  createdRewards    Reward[]         @relation("AdminRewards")
 
   @@map("users")
 }

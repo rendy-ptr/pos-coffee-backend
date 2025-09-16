@@ -12,6 +12,7 @@ const filesOrder = [
   'order.prismapart',
   'menu.prismapart',
   'table.prismapart',
+  'reward.prismapart',
 ];
 
 function mergeSchemas() {

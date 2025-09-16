@@ -1,7 +1,7 @@
 import { prisma } from '@/utils/prisma';
-import { hashPassword } from '@/utils/hash';
 import { KASIR_MOCK } from '@/mocks/kasir.mock';
 import { baseLogger } from '@/middlewares/logger';
+import { hashPassword } from '@/utils/hash';
 
 async function main() {
   const admin = await prisma.user.findFirst({
@@ -27,7 +27,8 @@ async function main() {
       continue;
     }
 
-    const hashedPassword = await hashPassword(kasir.password);
+    const plainPassword = 'password123';
+    const hashedPassword = await hashPassword(plainPassword);
 
     await prisma.user.create({
       data: {
@@ -36,6 +37,7 @@ async function main() {
         password: hashedPassword,
         role: 'KASIR',
         phone: kasir.phone,
+        profilePicture: kasir.profilePicture,
         isActive: kasir.isActive,
         kasirProfile: {
           create: {

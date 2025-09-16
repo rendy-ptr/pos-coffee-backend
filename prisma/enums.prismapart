@@ -35,3 +35,8 @@ enum TableLocation {
   INDOOR
   OUTDOOR
 }
+
+enum RewardType {
+  REWARD
+  VOUCHER
+}
