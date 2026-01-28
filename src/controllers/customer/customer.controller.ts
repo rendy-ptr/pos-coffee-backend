@@ -10,9 +10,8 @@ export const customerDashboard = async (
   res: Response
 ): Promise<void> => {
   try {
-    // Pastikan req.user ada (meskipun middleware seharusnya menjamin ini)
     if (!req.user) {
-      baseLogger.error('req.user tidak ditemukan di customerDashboard');
+      baseLogger.error('user Customer tidak ditemukan');
       res.status(401).json({
         success: false,
         message: 'Autentikasi gagal',
@@ -21,21 +20,14 @@ export const customerDashboard = async (
       return;
     }
 
-    // Ambil data pengguna berdasarkan id dari req.user
     const user = await prisma.user.findUnique({
       where: {
         id: req.user.id,
         isActive: true,
+        role: 'CUSTOMER',
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        loyaltyPoints: true,
-        phoneCustomer: true,
-        profilePicture: true,
-        createdAt: true,
+      include: {
+        customerProfile: true,
       },
     });
 
@@ -48,40 +40,33 @@ export const customerDashboard = async (
       });
       return;
     }
-
-    // Ambil pesanan pelanggan (opsional, jika diperlukan)
-    // const orders = await prisma.order.findMany({
-    //   where: {
-    //     customerId: req.user.id, // Sesuaikan dengan nama kolom di model Order
-    //   },
-    //   take: 10, // Batasi jumlah pesanan untuk performa
-    // });
+    if (!user.customerProfile) {
+      res.status(403).json({
+        success: false,
+        message: 'Hanya customer yang bisa mengakses dashboard ini',
+        errorCode: 'FORBIDDEN',
+      });
+      return;
+    }
 
     res.status(200).json({
       success: true,
       message: `Selamat datang di dashboard ${user.name}`,
-      data: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        loyaltyPoints: user.loyaltyPoints,
-        phoneNumber: user.phoneCustomer,
-        profilePicture: user.profilePicture,
-        createdAt: user.createdAt,
-        // orders,
-      },
+      data: user,
     });
   } catch (error) {
-    baseLogger.error('Error memuat dashboard pelanggan', {
-      userId: req.user?.id,
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+    if (error instanceof Error) {
+      baseLogger.error('Error Mengakses customer dashboard', {
+        error: error.message,
+        stack: error.stack,
+      });
+    }
+
     res.status(500).json({
       success: false,
-      message: 'Terjadi kesalahan saat memuat dashboard',
+      message: 'Terjadi kesalahan saat mengakses customer dashboard',
       errorCode: 'SERVER_ERROR',
+      error: error instanceof Error ? error.message : String(error),
     });
   }
 };

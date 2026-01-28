@@ -1,5 +1,3 @@
-import type { ZodError } from 'zod';
-
 export interface SuccessResponse<T> {
   success: true;
   message: string;
@@ -11,7 +9,7 @@ export interface ErrorResponse {
   message: string;
   errorCode?: string;
   error?: string;
-  errors?: ZodError['issues'];
+  errors?: string[];
 }
 
 export type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;

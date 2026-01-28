@@ -3,8 +3,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { httpLogger } from '@middlewares/logger';
 import swaggerUi from 'swagger-ui-express';
-import * as swaggerDocument from '@docs/openapi.json';
-import apiRouter from './routes/api';
+import { swaggerSpec } from '@/config/swagger.config';
+import apiRouter from '@/routes/api';
 
 const app = express();
 
@@ -18,12 +18,20 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(httpLogger);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    swaggerOptions: {
+      withCredentials: true,
+    },
+  })
+);
 
 app.use('/api', apiRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port http://localhost:${PORT}`);
   console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);
 });

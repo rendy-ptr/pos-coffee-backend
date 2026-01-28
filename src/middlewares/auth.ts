@@ -129,3 +129,41 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
     }
   };
 };
+
+export const optionalAuth = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const token = req.cookies.token;
+  if (!token) return next();
+
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) return next();
+
+  try {
+    const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+    if (typeof decoded === 'object' && decoded.id) {
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id, isActive: true },
+        select: { id: true, email: true, role: true },
+      });
+
+      if (user) {
+        req.user = {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+        };
+      }
+    }
+    next();
+  } catch (error) {
+    baseLogger.error('Error selama autentikasi', {
+      token: token.slice(0, 10) + '...',
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    next();
+  }
+};

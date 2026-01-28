@@ -9,20 +9,21 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "rootDir": "./src",
     "outDir": "./dist",
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@controllers/*": ["./controllers/*"],
-      "@routes/*": ["./routes/*"],
-      "@utils/*": ["./utils/*"],
-      "@types/*": ["./types/*"],
-      "@middlewares/*": ["./middlewares/*"],
-      "@docs/*": ["./docs/*"]
-    },
-    "ignoreDeprecations": "6.0"
+      "@/*": ["./src/*"],
+      "@controllers/*": ["./src/controllers/*"],
+      "@routes/*": ["./src/routes/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@types/*": ["./src/types/*"],
+      "@middlewares/*": ["./src/middlewares/*"],
+      "@docs/*": ["./docs/*"],
+      "@repositories/*": ["./src/repositories/*"],
+      "@services/*": ["./src/services/*"],
+      "@seed/*": ["./src/seed/*"]
+    }
   },
-  "include": ["src/**/*", "types/**/*"],
+  "include": ["src/**/*", "types/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist"]
 }

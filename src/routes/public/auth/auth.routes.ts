@@ -1,22 +1,57 @@
 import express from 'express';
 import {
-  registerCustomer,
-  loginAuth,
-  logoutAuth,
-  authMe,
-} from '@/controllers/auth/auth.controller';
-import { authMiddleware } from '@middlewares/auth';
-import { UserRole } from '@prisma/client';
+  handleRegister,
+  handleLogin,
+  handleLogout,
+  handleAuthMe,
+} from '@/handlers/auth/auth.handler';
+import { optionalAuth } from '@middlewares/auth';
+import { validate } from '@/middlewares/validate';
+import { registerSchema, loginSchema } from '@/schemas/register.schema';
 
 const auth = express.Router();
 
-auth.post('/register', registerCustomer);
-auth.post('/login', loginAuth);
-auth.post('/logout', logoutAuth);
-auth.get(
-  '/me',
-  authMiddleware([UserRole.ADMIN, UserRole.KASIR, UserRole.CUSTOMER]),
-  authMe
-);
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register customer
+ *     tags: [Auth]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/RegisterRequest' }
+ *     responses:
+ *       200: { description: OK }
+ * /api/auth/login:
+ *   post:
+ *     summary: Login
+ *     tags: [Auth]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/LoginRegisterRequest' }
+ *     responses:
+ *       200: { description: OK }
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout
+ *     tags: [Auth]
+ *     responses:
+ *       200: { description: OK }
+ */
+auth.post('/register', validate(registerSchema), handleRegister);
+auth.post('/login', validate(loginSchema), handleLogin);
+auth.post('/logout', handleLogout);
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Cek profile
+ *     tags: [Auth]
+ *     responses:
+ *       200: { description: OK }
+ */
+auth.get('/me', optionalAuth, handleAuthMe);
 
 export default auth;

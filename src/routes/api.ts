@@ -2,8 +2,9 @@ import express from 'express';
 import authRoutes from './public/auth/auth.routes';
 import menuRouter from './public/menu/menu.routes';
 import dashboardRouter from './guard/dashboard/dashboard.route';
-import adminRouter from './guard/admin/admin.routes';
+import adminRouter from './guard/admin/admin.route';
 import uploadRouter from './public/upload/upload.routes';
+import kasirRouter from './guard/kasir/kasir.routes';
 
 const router = express.Router();
 
@@ -15,5 +16,6 @@ router.use('/upload', uploadRouter);
 // protected
 router.use('/dashboard', dashboardRouter);
 router.use('/admin', adminRouter);
+router.use('/kasir', kasirRouter);
 
 export default router;

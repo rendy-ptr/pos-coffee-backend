@@ -9,7 +9,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 // ===== enums.prismapart =====
 
 enum UserRole {
@@ -55,7 +54,6 @@ enum RewardType {
   VOUCHER
 }
 
-
 // ===== user.prismapart =====
 
 model User {
@@ -86,6 +84,7 @@ model User {
 
 model CustomerProfile {
   id            String @id @default(cuid())
+  member_id     String @unique
   loyaltyPoints Int    @default(0)
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -116,7 +115,6 @@ model AdminProfile {
 
   @@map("admin_profiles")
 }
-
 
 // ===== order.prismapart =====
 
@@ -172,7 +170,6 @@ model OrderItem {
   @@map("order_items")
 }
 
-
 // ===== menu.prismapart =====
 
 model Category {
@@ -216,7 +213,6 @@ model Menu {
   @@map("menus")
 }
 
-
 // ===== table.prismapart =====
 
 model Table {
@@ -239,7 +235,6 @@ model Table {
   @@map("tables")
 }
 
-
 // ===== reward.prismapart =====
 
 model Reward {
@@ -249,22 +244,22 @@ model Reward {
   description String?
 
   // Status aktif/tidak aktif
-  isActive    Boolean    @default(true)
+  isActive Boolean @default(true)
 
   // Khusus REWARD
-  points      Int?
+  points Int?
 
   // Khusus VOUCHER
-  code        String?    @unique
-  expiryDate  DateTime?
+  code       String?   @unique
+  expiryDate DateTime?
 
   // Berlaku untuk keduanya
-  conditions  String?
+  conditions String?
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdBy   User       @relation("AdminRewards", fields: [createdById], references: [id])
+  createdBy   User   @relation("AdminRewards", fields: [createdById], references: [id])
   createdById String
 
   @@map("rewards")
