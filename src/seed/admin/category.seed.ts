@@ -17,34 +17,30 @@ async function main() {
     {
       name: 'Minuman',
       description: 'Aneka minuman hangat & dingin',
-      icon: 'Coffee',
-      createdById: admin.id,
+      isActive: true,
     },
     {
       name: 'Makanan',
       description: 'Menu makanan utama',
-      icon: 'Utensils',
-      createdById: admin.id,
+      isActive: true,
     },
     {
       name: 'Snack',
       description: 'Cemilan ringan untuk teman ngopi',
-      icon: 'Popcorn',
-      createdById: admin.id,
+      isActive: true,
     },
     {
       name: 'Dessert',
       description: 'Makanan penutup manis',
-      icon: 'IceCreamBowl',
-      createdById: admin.id,
+      isActive: true,
     },
   ];
 
   for (const category of categories) {
     await prisma.category.upsert({
+      create: category,
       where: { name: category.name },
       update: {},
-      create: category,
     });
   }
 

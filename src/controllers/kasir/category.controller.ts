@@ -1,7 +1,7 @@
 import { prisma } from '@/utils/prisma';
 import type { Category } from '@prisma/client';
-import type { AuthRequest } from '../../types/auth';
-import type { ApiResponse } from '@/types/ApiResponse';
+import type { AuthRequest } from '../../types/auth/auth.type';
+import type { ApiResponse } from '@/types/response/api.type';
 import { baseLogger } from '@/middlewares/logger';
 import { Response } from 'express';
 

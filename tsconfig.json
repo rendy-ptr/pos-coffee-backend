@@ -21,7 +21,8 @@
       "@docs/*": ["./docs/*"],
       "@repositories/*": ["./src/repositories/*"],
       "@services/*": ["./src/services/*"],
-      "@seed/*": ["./src/seed/*"]
+      "@seed/*": ["./src/seed/*"],
+      "@schemas/*": ["./src/schemas/*"]
     }
   },
   "include": ["src/**/*", "types/**/*", "tests/**/*"],

@@ -1,31 +1,30 @@
 import type { Request, Response } from 'express';
-import { menuService } from '@/services/menu.service';
+import { kasirService } from '@/services/kasir.service';
 import type { ApiRes } from '@/types/response/api.type';
 import type { IdParams } from '@/types/request/params.type';
-import { BusinessError, NotFoundError } from '@/utils/errors';
+import { NotFoundError, BusinessError } from '@/utils/errors';
 import {
-  menuDetailResponse,
-  menuListResponse,
-  menuMutateResponse,
-} from '@/queries/menu.query';
-import { CreateMenuDTO, UpdateMenuDTO } from '@/schemas/menu.schema';
+  KasirListResponse,
+  KasirDetailResponse,
+  kasirMutateResponse,
+} from '@/queries/kasir.query';
+import { CreateKasirDTO, UpdateKasirDTO } from '@/schemas/kasir.schema';
 
-export const handleGetMenus = async (
+export const handleGetKasir = async (
   req: Request,
-  res: Response<ApiRes<menuListResponse[]>>
+  res: Response<ApiRes<KasirListResponse[]>>
 ) => {
   try {
-    const menus = await menuService.getAllMenus();
-
+    const kasir = await kasirService.getAllKasir();
     res.status(200).json({
       success: true,
-      message: `Berhasil mendapatkan ${menus.length} Menu`,
-      data: menus,
+      message: `Berhasil mendapatkan ${kasir.length} Kasir`,
+      data: kasir,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Terjadi kesalahan saat Mengambil Menu',
+      message: 'Terjadi kesalahan saat Mengambil Kasir',
       errorCode: 'SERVER_ERROR',
       error: error instanceof Error ? error.message : String(error),
       data: null,
@@ -33,18 +32,18 @@ export const handleGetMenus = async (
   }
 };
 
-export const handleCreateMenu = async (
-  req: Request<{}, {}, CreateMenuDTO>,
-  res: Response<ApiRes<menuMutateResponse>>
+export const handleCreateKasir = async (
+  req: Request<{}, {}, CreateKasirDTO>,
+  res: Response<ApiRes<kasirMutateResponse>>
 ) => {
   try {
     const body = req.body;
-    const menu = await menuService.createMenu(body);
+    const kasir = await kasirService.createKasir(body);
 
     res.status(200).json({
       success: true,
-      message: `Menu ${menu.name} berhasil dibuat`,
-      data: menu,
+      message: `Kasir ${kasir.name} berhasil dibuat`,
+      data: kasir,
     });
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -67,7 +66,7 @@ export const handleCreateMenu = async (
 
     res.status(500).json({
       success: false,
-      message: 'Terjadi kesalahan saat Membuat Menu',
+      message: 'Terjadi kesalahan saat Membuat Kasir',
       errorCode: 'SERVER_ERROR',
       error: error instanceof Error ? error.message : String(error),
       data: null,
@@ -75,19 +74,19 @@ export const handleCreateMenu = async (
   }
 };
 
-export const handleUpdateMenu = async (
-  req: Request<IdParams, {}, UpdateMenuDTO>,
-  res: Response<ApiRes<menuMutateResponse>>
+export const handleUpdateKasir = async (
+  req: Request<IdParams, {}, UpdateKasirDTO>,
+  res: Response<ApiRes<kasirMutateResponse>>
 ) => {
   try {
     const { id } = req.params;
     const body = req.body;
-    const menu = await menuService.updateMenu(id, body);
+    const kasir = await kasirService.updateKasir(id, body);
 
     res.status(200).json({
       success: true,
-      message: `Menu ${menu.name} berhasil diperbarui`,
-      data: menu,
+      message: `Kasir ${kasir.name} berhasil diperbarui`,
+      data: kasir,
     });
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -110,7 +109,7 @@ export const handleUpdateMenu = async (
 
     res.status(500).json({
       success: false,
-      message: 'Terjadi kesalahan saat mengedit menu',
+      message: 'Terjadi kesalahan saat Update Kasir',
       errorCode: 'SERVER_ERROR',
       error: error instanceof Error ? error.message : String(error),
       data: null,
@@ -118,51 +117,18 @@ export const handleUpdateMenu = async (
   }
 };
 
-export const handleDeleteMenu = async (
+export const handleDeleteKasir = async (
   req: Request<IdParams>,
   res: Response<ApiRes<null>>
 ) => {
   try {
     const { id } = req.params;
-    const menu = await menuService.deleteMenu(id);
+    const kasir = await kasirService.deleteKasir(id);
 
     res.status(200).json({
       success: true,
-      message: `Menu ${menu.name} berhasil dihapus`,
+      message: `Kasir ${kasir.name} berhasil dihapus`,
       data: null,
-    });
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      res.status(404).json({
-        success: false,
-        message: error.message,
-        data: null,
-      });
-      return;
-    }
-
-    res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat menghapus menu',
-      errorCode: 'SERVER_ERROR',
-      error: error instanceof Error ? error.message : String(error),
-      data: null,
-    });
-  }
-};
-
-export const handleGetMenuDetail = async (
-  req: Request<IdParams>,
-  res: Response<ApiRes<menuDetailResponse>>
-) => {
-  try {
-    const { id } = req.params;
-    const menu = await menuService.getMenuDetail(id);
-
-    res.status(200).json({
-      success: true,
-      message: `Berhasil mendapatkan menu ${menu.name}`,
-      data: menu,
     });
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -185,7 +151,49 @@ export const handleGetMenuDetail = async (
 
     res.status(500).json({
       success: false,
-      message: 'Terjadi kesalahan saat Mengambil Menu',
+      message: 'Terjadi kesalahan saat Delete Kasir',
+      errorCode: 'SERVER_ERROR',
+      error: error instanceof Error ? error.message : String(error),
+      data: null,
+    });
+  }
+};
+
+export const handleGetKasirDetail = async (
+  req: Request<IdParams>,
+  res: Response<ApiRes<KasirDetailResponse>>
+) => {
+  try {
+    const { id } = req.params;
+    const kasir = await kasirService.getKasirDetail(id);
+
+    res.status(200).json({
+      success: true,
+      message: `Kasir ${kasir.name} berhasil ditemukan`,
+      data: kasir,
+    });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      res.status(404).json({
+        success: false,
+        message: error.message,
+        data: null,
+      });
+      return;
+    }
+
+    if (error instanceof BusinessError) {
+      res.status(409).json({
+        success: false,
+        message: error.message,
+        data: null,
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan saat Get Kasir',
       errorCode: 'SERVER_ERROR',
       error: error instanceof Error ? error.message : String(error),
       data: null,

@@ -1,11 +1,12 @@
 import { categoryRepository } from '@/repositories/category.repository';
-import type {
-  CreateCategoryDTO,
-  UpdateCategoryDTO,
-} from '@/data/category.data';
+
 import { NotFoundError, BusinessError } from '@/utils/errors';
 import type { Category } from '@prisma/client';
 import { baseLogger } from '@/middlewares/logger';
+import {
+  CreateCategoryDTO,
+  UpdateCategoryDTO,
+} from '@/schemas/category.schema';
 
 export class CategoryService {
   private repository = categoryRepository;
@@ -14,10 +15,7 @@ export class CategoryService {
     return this.repository.findAll({ createdAt: 'desc' });
   }
 
-  async createCategory(
-    userId: string,
-    data: CreateCategoryDTO
-  ): Promise<Category> {
+  async createCategory(data: CreateCategoryDTO): Promise<Category> {
     const existingCategory = await this.repository.findByName(data.name);
     if (existingCategory) {
       throw new BusinessError('Kategori dengan nama tersebut sudah ada');
@@ -25,15 +23,11 @@ export class CategoryService {
 
     const category = await this.repository.create({
       name: data.name,
-      description: data.description || null,
-      icon: data.icon,
-      isActive: data.isActive ?? true,
-      createdBy: {
-        connect: { id: userId },
-      },
+      description: data.description ?? '',
+      isActive: data.isActive,
     });
 
-    baseLogger.info(`Kategori dibuat: ${category.name} oleh user ${userId}`);
+    baseLogger.info(`Kategori dibuat: ${category.name}`);
     return category;
   }
 

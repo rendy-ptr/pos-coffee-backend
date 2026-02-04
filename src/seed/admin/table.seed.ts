@@ -55,7 +55,6 @@ async function main() {
         number: table.number,
         capacity: table.capacity,
         location: table.location,
-        createdById: admin.id,
         status: table.status ?? undefined,
         reservedBy: table.reservedBy ?? undefined,
         reservedTime: table.reservedTime ?? undefined,

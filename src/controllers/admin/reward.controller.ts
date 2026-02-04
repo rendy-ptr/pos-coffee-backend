@@ -3,8 +3,8 @@ import {
   createRewardSchema,
   updateRewardSchema,
 } from '@/schemas/reward.schema';
-import { ApiResponse } from '@/types/ApiResponse';
-import { AuthRequest } from '@/types/auth';
+import { ApiResponse } from '@/types/response/api.type';
+import { AuthRequest } from '@/types/auth/auth.type';
 import { prisma } from '@/utils/prisma';
 import { Reward } from '@prisma/client';
 import { Response } from 'express';

@@ -30,7 +30,7 @@ const auth = express.Router();
  *     requestBody:
  *       content:
  *         application/json:
- *           schema: { $ref: '#/components/schemas/LoginRegisterRequest' }
+ *           schema: { $ref: '#/components/schemas/LoginRequest' }
  *     responses:
  *       200: { description: OK }
  * /api/auth/logout:

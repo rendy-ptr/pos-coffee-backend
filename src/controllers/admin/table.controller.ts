@@ -4,8 +4,8 @@ import {
   tableParamsSchema,
   updateTableSchema,
 } from '@/schemas/table.schema';
-import { ApiResponse } from '@/types/ApiResponse';
-import { AuthRequest } from '@/types/auth';
+import { ApiResponse } from '@/types/response/api.type';
+import { AuthRequest } from '@/types/auth/auth.type';
 import { prisma } from '@/utils/prisma';
 import { Response } from 'express';
 import { Table } from '@prisma/client';

@@ -1,15 +1,19 @@
 import { prisma } from '@/utils/prisma';
 import type { Menu, Prisma } from '@prisma/client';
-import { MenuWithCategory } from '@/data/menu.data';
+import {
+  menuDetailResponse,
+  menuListResponse,
+  menuListSelect,
+  menuMutateResponse,
+  menuMutateSelect,
+} from '@/queries/menu.query';
 
 export class MenuRepository {
-  async findAll(): Promise<MenuWithCategory[]> {
+  async findAll(): Promise<menuListResponse[]> {
     return prisma.menu.findMany({
       orderBy: { createdAt: 'desc' },
-      include: {
-        category: true,
-      },
-    }) as Promise<MenuWithCategory[]>;
+      select: menuListSelect,
+    }) as Promise<menuListResponse[]>;
   }
 
   async findById(id: string): Promise<Menu | null> {
@@ -24,22 +28,36 @@ export class MenuRepository {
     });
   }
 
-  async create(data: Prisma.MenuCreateInput): Promise<Menu> {
+  async create(data: Prisma.MenuCreateInput): Promise<menuMutateResponse> {
     return prisma.menu.create({
       data,
-    });
+      select: menuMutateSelect,
+    }) as Promise<menuMutateResponse>;
   }
 
-  async update(id: string, data: Prisma.MenuUpdateInput): Promise<Menu> {
+  async update(
+    id: string,
+    data: Prisma.MenuUpdateInput
+  ): Promise<menuMutateResponse> {
     return prisma.menu.update({
       where: { id },
       data,
-    });
+      select: menuMutateSelect,
+    }) as Promise<menuMutateResponse>;
   }
 
   async delete(id: string): Promise<Menu> {
     return prisma.menu.delete({
       where: { id },
+    });
+  }
+
+  async findMenuDetail(id: string): Promise<menuDetailResponse | null> {
+    return prisma.menu.findUnique({
+      where: { id },
+      include: {
+        category: true,
+      },
     });
   }
 }

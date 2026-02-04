@@ -1,28 +1,27 @@
 import type { Request, Response } from 'express';
 import { authService } from '@/services/auth.service';
-import type { AuthRequest } from '@/types/auth';
-import type { ApiResponse } from '@/types/ApiResponse';
+import type { ApiRes } from '@/types/response/api.type';
 import { BusinessError } from '@/utils/errors';
 import { baseLogger } from '@/middlewares/logger';
-import type { RegisterDTO, LoginDTO, AuthUserResponse } from '@/data/auth.data';
+import type {
+  AuthMeResponse,
+  RegisterResponse,
+  LoginResponse,
+} from '@/types/response/response.type';
+import { LoginDTO, RegisterDTO } from '@/schemas/register.schema';
 
 export const handleRegister = async (
-  req: Request<RegisterDTO>,
-  res: Response<ApiResponse<AuthUserResponse>>
+  req: Request<{}, {}, RegisterDTO>,
+  res: Response<ApiRes<RegisterResponse>>
 ) => {
   try {
-    const user = await authService.register(req.body);
+    const body = req.body;
+    const result = await authService.register(body);
 
     res.status(201).json({
       success: true,
-      message: 'Registrasi Berhasil',
-      data: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        redirectUrl: '/auth/login',
-      },
+      message: 'Registrasi berhasil',
+      data: result,
     });
   } catch (error) {
     if (error instanceof BusinessError) {
@@ -30,6 +29,7 @@ export const handleRegister = async (
         success: false,
         message: error.message,
         errorCode: 'BUSINESS_ERROR',
+        data: null,
       });
       return;
     }
@@ -39,31 +39,31 @@ export const handleRegister = async (
       success: false,
       message: 'Internal Server Error',
       errorCode: 'SERVER_ERROR',
+      error: error instanceof Error ? error.message : String(error),
+      data: null,
     });
   }
 };
 
 export const handleLogin = async (
-  req: Request<LoginDTO>,
-  res: Response<ApiResponse<AuthUserResponse>>
+  req: Request<{}, {}, LoginDTO>,
+  res: Response<ApiRes<LoginResponse>>
 ) => {
   try {
-    const { user, token } = await authService.login(req.body);
+    const body = req.body;
+    const result = await authService.login(body);
 
-    res.cookie('token', token, {
+    res.cookie('token', result.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600000,
       sameSite: 'strict',
-      maxAge: 3600 * 1000,
     });
 
     res.status(200).json({
       success: true,
-      message: 'Login Berhasil',
-      data: {
-        ...user,
-        redirectUrl: `/dashboard/${user.role.toLowerCase()}`,
-      },
+      message: 'Login berhasil',
+      data: result,
     });
   } catch (error) {
     if (error instanceof BusinessError) {
@@ -71,6 +71,7 @@ export const handleLogin = async (
         success: false,
         message: error.message,
         errorCode: 'INVALID_CREDENTIALS',
+        data: null,
       });
       return;
     }
@@ -80,13 +81,15 @@ export const handleLogin = async (
       success: false,
       message: 'Internal Server Error',
       errorCode: 'SERVER_ERROR',
+      error: error instanceof Error ? error.message : String(error),
+      data: null,
     });
   }
 };
 
 export const handleLogout = async (
   req: Request,
-  res: Response<ApiResponse<null>>
+  res: Response<ApiRes<null>>
 ) => {
   res.clearCookie('token', {
     httpOnly: true,
@@ -102,24 +105,28 @@ export const handleLogout = async (
 };
 
 export const handleAuthMe = async (
-  req: AuthRequest,
-  res: Response<ApiResponse<{ id: string; email: string; role: string }>>
+  req: Request,
+  res: Response<ApiRes<AuthMeResponse>>
 ) => {
   if (!req.user) {
     res.status(401).json({
       success: false,
-      message: 'Tidak ter-autentikasi',
+      message: 'Sesi berakhir, silakan login kembali',
+      data: null,
     });
     return;
   }
 
-  res.json({
+  const responseData: AuthMeResponse = {
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.email,
+    role: req.user.role,
+  };
+
+  res.status(200).json({
     success: true,
-    message: 'User ter-autentikasi',
-    data: {
-      id: req.user.id,
-      email: req.user.email,
-      role: req.user.role,
-    },
+    message: 'Data pengguna berhasil diambil',
+    data: responseData,
   });
 };

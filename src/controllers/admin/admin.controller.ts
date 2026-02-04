@@ -1,8 +1,8 @@
 import type { Response } from 'express';
 import { baseLogger } from '../../middlewares/logger';
-import { AuthRequest } from '../../types/auth';
+import { AuthRequest } from '../../types/auth/auth.type';
 import { prisma } from '@/utils/prisma';
-import type { ApiResponse } from '@/types/ApiResponse';
+import type { ApiResponse } from '@/types/response/api.type';
 import type { Prisma } from '@prisma/client';
 import { updateAdminProfileSchema } from '@/schemas/admin.schema';
 

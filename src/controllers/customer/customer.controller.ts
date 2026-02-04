@@ -1,7 +1,7 @@
 import type { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { baseLogger } from '../../middlewares/logger';
-import { AuthRequest } from '../../types/auth';
+import { AuthRequest } from '../../types/auth/auth.type';
 
 const prisma = new PrismaClient();
 

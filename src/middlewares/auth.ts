@@ -1,15 +1,14 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import { baseLogger } from './logger';
-import { AuthRequest, JwtPayload } from '../types/auth';
-import { UserRole } from '@prisma/client';
+import { JwtPayload } from '../types/auth/auth.type';
 
 const prisma = new PrismaClient();
 
 export const authMiddleware = (allowedRoles: UserRole[]) => {
   return async (
-    req: AuthRequest,
+    req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
@@ -23,6 +22,7 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
         success: false,
         message: 'Token diperlukan',
         errorCode: 'NO_TOKEN',
+        data: null,
       });
       return;
     }
@@ -34,6 +34,7 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
         success: false,
         message: 'Konfigurasi server salah',
         errorCode: 'JWT_CONFIG_ERROR',
+        data: null,
       });
       return;
     }
@@ -52,6 +53,7 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
           success: false,
           message: 'Token tidak valid',
           errorCode: 'INVALID_TOKEN',
+          data: null,
         });
         return;
       }
@@ -63,6 +65,7 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
         },
         select: {
           id: true,
+          name: true,
           email: true,
           role: true,
         },
@@ -76,6 +79,7 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
           success: false,
           message: 'Pengguna tidak valid atau tidak aktif',
           errorCode: 'INVALID_USER',
+          data: null,
         });
         return;
       }
@@ -88,12 +92,14 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
           success: false,
           message: 'Akses ditolak',
           errorCode: 'FORBIDDEN',
+          data: null,
         });
         return;
       }
 
       req.user = {
         id: user.id,
+        name: user.name,
         email: user.email,
         role: user.role,
       };
@@ -109,6 +115,7 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
           success: false,
           message: 'Token kedaluwarsa',
           errorCode: 'TOKEN_EXPIRED',
+          data: null,
         });
         return;
       }
@@ -125,13 +132,14 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
             ? String(error)
             : 'Token tidak valid',
         errorCode: 'INVALID_TOKEN',
+        data: null,
       });
     }
   };
 };
 
 export const optionalAuth = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -146,12 +154,13 @@ export const optionalAuth = async (
     if (typeof decoded === 'object' && decoded.id) {
       const user = await prisma.user.findUnique({
         where: { id: decoded.id, isActive: true },
-        select: { id: true, email: true, role: true },
+        select: { id: true, name: true, email: true, role: true },
       });
 
       if (user) {
         req.user = {
           id: user.id,
+          name: user.name,
           email: user.email,
           role: user.role,
         };

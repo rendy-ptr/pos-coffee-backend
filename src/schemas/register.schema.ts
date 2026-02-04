@@ -1,29 +1,15 @@
-import Joi from 'joi';
+import { z } from 'zod';
 
-export const registerSchema = Joi.object({
-  name: Joi.string().trim().required().messages({
-    'string.empty': 'Nama lengkap wajib diisi',
-    'any.required': 'Nama lengkap wajib diisi',
-  }),
-  email: Joi.string().trim().email().required().messages({
-    'string.empty': 'Email wajib diisi',
-    'any.required': 'Email wajib diisi',
-    'string.email': 'Email tidak valid',
-  }),
-  password: Joi.string().trim().required().messages({
-    'string.empty': 'Password wajib diisi',
-    'any.required': 'Password wajib diisi',
-  }),
+export const registerSchema = z.object({
+  name: z.string().trim().min(1, { message: 'Nama wajib diisi' }),
+  email: z.email().trim().min(1, { message: 'Email wajib diisi' }),
+  password: z.string().trim().min(1, { message: 'Password wajib diisi' }),
 });
 
-export const loginSchema = Joi.object({
-  email: Joi.string().trim().email().required().messages({
-    'string.empty': 'Email wajib diisi',
-    'any.required': 'Email wajib diisi',
-    'string.email': 'Email tidak valid',
-  }),
-  password: Joi.string().trim().required().messages({
-    'string.empty': 'Password wajib diisi',
-    'any.required': 'Password wajib diisi',
-  }),
+export const loginSchema = z.object({
+  email: z.email().trim().min(1, { message: 'Email wajib diisi' }),
+  password: z.string().trim().min(1, { message: 'Password wajib diisi' }),
 });
+
+export type RegisterDTO = z.infer<typeof registerSchema>;
+export type LoginDTO = z.infer<typeof loginSchema>;

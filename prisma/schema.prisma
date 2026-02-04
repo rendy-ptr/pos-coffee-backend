@@ -69,15 +69,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  customerProfile   CustomerProfile?
-  kasirProfile      KasirProfile?
-  adminProfile      AdminProfile?
-  customerOrders    Order[]          @relation("CustomerOrders")
-  processedOrders   Order[]          @relation("KasirOrders")
-  createdMenus      Menu[]           @relation("AdminMenus")
-  createdCategories Category[]       @relation("AdminCategories")
-  createdTables     Table[]          @relation("AdminTables")
-  createdRewards    Reward[]         @relation("AdminRewards")
+  customerProfile CustomerProfile?
+  kasirProfile    KasirProfile?
+  adminProfile    AdminProfile?
+  customerOrders  Order[]          @relation("CustomerOrders")
+  processedOrders Order[]          @relation("KasirOrders")
 
   @@map("users")
 }
@@ -175,15 +171,12 @@ model OrderItem {
 model Category {
   id          String   @id @default(cuid())
   name        String   @unique
-  description String?
-  icon        String
-  isActive    Boolean  @default(true)
+  description String
+  isActive    Boolean
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  menus       Menu[]
-  createdBy   User   @relation("AdminCategories", fields: [createdById], references: [id])
-  createdById String
+  menus Menu[]
 
   @@map("categories")
 }
@@ -202,11 +195,9 @@ model Menu {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category    Category    @relation(fields: [categoryId], references: [id])
-  categoryId  String
-  orderItems  OrderItem[]
-  createdBy   User        @relation("AdminMenus", fields: [createdById], references: [id])
-  createdById String
+  category   Category    @relation(fields: [categoryId], references: [id])
+  categoryId String
+  orderItems OrderItem[]
 
   @@index([categoryId])
   @@index([isActive])
@@ -228,9 +219,6 @@ model Table {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  createdBy   User   @relation("AdminTables", fields: [createdById], references: [id])
-  createdById String
 
   @@map("tables")
 }
@@ -258,9 +246,6 @@ model Reward {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  createdBy   User   @relation("AdminRewards", fields: [createdById], references: [id])
-  createdById String
 
   @@map("rewards")
 }

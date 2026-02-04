@@ -49,7 +49,6 @@ async function main() {
         sellingPrice: item.sellingPrice,
         profit: item.profit,
         isActive: item.isActive,
-        createdById: admin.id,
       },
     });
   }

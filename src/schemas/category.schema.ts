@@ -1,25 +1,20 @@
-import Joi from 'joi';
+import z from 'zod';
 
-export const createCategorySchema = Joi.object({
-  name: Joi.string().trim().required().messages({
-    'string.empty': 'Nama kategori wajib diisi',
-    'any.required': 'Nama kategori wajib diisi',
-  }),
-  description: Joi.string().trim().allow('').optional(),
-  icon: Joi.string().trim().required().messages({
-    'string.empty': 'Icon kategori wajib diisi',
-    'any.required': 'Icon kategori wajib diisi',
-  }),
-  isActive: Joi.boolean().default(true),
+export const createCategorySchema = z.object({
+  name: z.string().trim().min(1, { message: 'Nama kategori wajib diisi' }),
+  description: z.string().trim().optional(),
+  isActive: z.boolean().default(true),
 });
 
-export const updateCategorySchema = Joi.object({
-  name: Joi.string().trim().optional(),
-  description: Joi.string().trim().allow('').optional(),
-  icon: Joi.string().trim().optional(),
-  isActive: Joi.boolean().optional(),
-})
-  .min(1)
-  .messages({
-    'object.min': 'Minimal satu field harus diupdate',
+export const updateCategorySchema = z
+  .object({
+    name: z.string().trim().min(1).optional(),
+    description: z.string().trim().optional(),
+    isActive: z.boolean().optional(),
+  })
+  .refine(data => Object.keys(data).length > 0, {
+    message: 'Minimal satu field harus diperbarui',
   });
+
+export type CreateCategoryDTO = z.infer<typeof createCategorySchema>;
+export type UpdateCategoryDTO = z.infer<typeof updateCategorySchema>;

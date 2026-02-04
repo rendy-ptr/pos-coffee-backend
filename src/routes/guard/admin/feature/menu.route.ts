@@ -4,6 +4,7 @@ import {
   handleCreateMenu,
   handleUpdateMenu,
   handleDeleteMenu,
+  handleGetMenuDetail,
 } from '@/handlers/admin/menu.handler';
 import { authMiddleware } from '@middlewares/auth';
 import { validate } from '@/middlewares/validate';
@@ -62,6 +63,13 @@ router.get('/', authMiddleware([UserRole.ADMIN]), handleGetMenus);
  *     parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
  *     responses:
  *       200: { description: OK }
+ *   get:
+ *    summary: Detail menu (Admin)
+ *    description: Membutuhkan role ADMIN via cookie 'token'
+ *    tags: [Menu]
+ *    parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+ *    responses:
+ *      200: { description: OK }
  */
 router.patch(
   '/:id',
@@ -71,5 +79,7 @@ router.patch(
 );
 
 router.delete('/:id', authMiddleware([UserRole.ADMIN]), handleDeleteMenu);
+
+router.get('/:id', authMiddleware([UserRole.ADMIN]), handleGetMenuDetail);
 
 export default router;
