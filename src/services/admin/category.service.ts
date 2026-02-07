@@ -1,5 +1,4 @@
-import { categoryRepository } from '@/repositories/category.repository';
-
+import { categoryRepository } from '@/repositories/admin/category.repository';
 import { NotFoundError, BusinessError } from '@/utils/errors';
 import type { Category } from '@prisma/client';
 import { baseLogger } from '@/middlewares/logger';
@@ -12,7 +11,7 @@ export class CategoryService {
   private repository = categoryRepository;
 
   async getAllCategories(): Promise<Category[]> {
-    return this.repository.findAll({ createdAt: 'desc' });
+    return this.repository.getAll({ createdAt: 'desc' });
   }
 
   async createCategory(data: CreateCategoryDTO): Promise<Category> {
@@ -46,7 +45,7 @@ export class CategoryService {
 
     const updatedCategory = await this.repository.update(id, data);
 
-    baseLogger.info(`Kategori diupdate: ${updatedCategory.name}`);
+    baseLogger.info(`Kategori diperbarui: ${updatedCategory.name}`);
     return updatedCategory;
   }
 

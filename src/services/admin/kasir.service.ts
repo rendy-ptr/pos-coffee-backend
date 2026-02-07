@@ -1,4 +1,4 @@
-import { kasirRepository } from '@/repositories/kasir.repository';
+import { kasirRepository } from '@/repositories/admin/kasir.repository';
 import {
   KasirListResponse,
   KasirDetailResponse,
@@ -9,7 +9,7 @@ import { baseLogger } from '@/middlewares/logger';
 import crypto from 'crypto';
 import { hashPassword } from '@/utils/hash';
 import { Prisma, UserRole, User } from '@prisma/client';
-import { emailService } from './shared/email.service';
+import { emailService } from '../shared/email.service';
 import { CreateKasirDTO, UpdateKasirDTO } from '@/schemas/kasir.schema';
 
 export class KasirService {

@@ -2,7 +2,7 @@ import { prisma } from '@/utils/prisma';
 import type { Category, Prisma } from '@prisma/client';
 
 export class CategoryRepository {
-  async findAll(
+  async getAll(
     orderBy: Prisma.CategoryOrderByWithRelationInput = { createdAt: 'desc' }
   ): Promise<Category[]> {
     return prisma.category.findMany({

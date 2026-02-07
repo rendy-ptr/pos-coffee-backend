@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { categoryService } from '@/services/category.service';
+import { categoryService } from '@/services/admin/category.service';
 import type { ApiRes } from '@/types/response/api.type';
 import type { IdParams } from '@/types/request/params.type';
 import { NotFoundError, BusinessError } from '@/utils/errors';
@@ -34,7 +34,7 @@ export const handleGetCategories = async (
 
 export const handleCreateCategory = async (
   req: Request<{}, {}, CreateCategoryDTO>,
-  res: Response<ApiRes<null>>
+  res: Response<ApiRes<Category>>
 ) => {
   try {
     const body = req.body;
@@ -43,7 +43,7 @@ export const handleCreateCategory = async (
     res.status(200).json({
       success: true,
       message: `Kategori ${category.name} berhasil dibuat`,
-      data: null,
+      data: category,
     });
   } catch (error) {
     if (error instanceof BusinessError) {
@@ -68,7 +68,7 @@ export const handleCreateCategory = async (
 
 export const handleUpdateCategory = async (
   req: Request<IdParams, {}, UpdateCategoryDTO>,
-  res: Response<ApiRes<null>>
+  res: Response<ApiRes<Category>>
 ) => {
   try {
     const { id } = req.params;
@@ -79,7 +79,7 @@ export const handleUpdateCategory = async (
     res.status(200).json({
       success: true,
       message: `Kategori ${category.name} berhasil diperbarui`,
-      data: null,
+      data: category,
     });
   } catch (error) {
     if (error instanceof NotFoundError) {

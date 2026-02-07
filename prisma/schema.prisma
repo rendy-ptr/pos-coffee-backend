@@ -213,7 +213,6 @@ model Table {
   status        TableStatus   @default(AVAILABLE)
   currentGuests Int           @default(0)
   location      TableLocation
-  lastCleaned   DateTime      @default(now())
   reservedBy    String?
   reservedTime  DateTime?
 

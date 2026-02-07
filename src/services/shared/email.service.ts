@@ -1,4 +1,4 @@
-import { emailRepository } from '@/repositories/email.repository';
+import { emailRepository } from '@/repositories/shared/email.repository';
 import { CreateKasirDTO } from '@schemas/kasir.schema';
 import { emailTemplates } from '@/emails/template.email';
 

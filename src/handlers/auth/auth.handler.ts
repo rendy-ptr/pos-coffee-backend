@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { authService } from '@/services/auth.service';
+import { authService } from '@/services/auth/auth.service';
 import type { ApiRes } from '@/types/response/api.type';
 import { BusinessError } from '@/utils/errors';
 import { baseLogger } from '@/middlewares/logger';

@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { menuService } from '@/services/menu.service';
+import { menuService } from '@/services/admin/menu.service';
 import type { ApiRes } from '@/types/response/api.type';
 import type { IdParams } from '@/types/request/params.type';
 import { BusinessError, NotFoundError } from '@/utils/errors';

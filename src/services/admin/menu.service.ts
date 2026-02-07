@@ -1,5 +1,5 @@
-import { menuRepository } from '@/repositories/menu.repository';
-import { categoryRepository } from '@/repositories/category.repository';
+import { menuRepository } from '@/repositories/admin/menu.repository';
+import { categoryRepository } from '@/repositories/admin/category.repository';
 import { BusinessError, NotFoundError } from '@/utils/errors';
 import {
   menuDetailResponse,

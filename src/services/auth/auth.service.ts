@@ -1,4 +1,4 @@
-import { userRepository } from '@/repositories/user.repository';
+import { userRepository } from '@/repositories/auth/auth.repository';
 import { hashPassword, comparePassword } from '@/utils/hash';
 import jwt from 'jsonwebtoken';
 import { BusinessError } from '@/utils/errors';
