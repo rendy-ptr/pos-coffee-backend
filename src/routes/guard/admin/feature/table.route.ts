@@ -1,5 +1,10 @@
 import express from 'express';
-import { handleCreateTable, handleDeleteTable, handleGetTable, handleUpdateTable } from '@/handlers/admin/table.handler';
+import {
+  handleCreateTable,
+  handleDeleteTable,
+  handleGetTable,
+  handleUpdateTable,
+} from '@/handlers/admin/table.handler';
 import { authMiddleware } from '@middlewares/auth';
 import { UserRole } from '@prisma/client';
 

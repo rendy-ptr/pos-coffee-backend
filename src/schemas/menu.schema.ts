@@ -24,14 +24,40 @@ export const createMenuSchema = z.object({
 
 export const updateMenuSchema = z
   .object({
-    imageUrl: z.url().trim().min(1).optional(),
-    name: z.string().trim().min(1).optional(),
-    categoryId: z.string().min(1).optional(),
-    stock: z.number().positive().optional(),
-    productionCapital: z.number().positive().optional(),
-    sellingPrice: z.number().positive().optional(),
-    profit: z.number().optional(),
-    isActive: z.boolean().optional(),
+    imageUrl: z
+      .url()
+      .trim()
+      .min(1, { message: 'URL gambar wajib diisi' })
+      .optional(),
+    name: z
+      .string()
+      .trim()
+      .min(1, { message: 'Nama menu wajib diisi' })
+      .optional(),
+    categoryId: z
+      .string()
+      .min(1, { message: 'Kategori wajib dipilih' })
+      .optional(),
+    stock: z
+      .number()
+      .positive()
+      .min(1, { message: 'Stock harus berupa bilangan positif' })
+      .optional(),
+    productionCapital: z
+      .number()
+      .positive()
+      .min(1, { message: 'Modal produksi harus berupa bilangan positif' })
+      .optional(),
+    sellingPrice: z
+      .number()
+      .positive()
+      .min(1, { message: 'Harga jual harus berupa bilangan positif' })
+      .optional(),
+    profit: z
+      .number()
+      .min(1, { message: 'Keuntungan harus berupa bilangan positif' })
+      .optional(),
+    isActive: z.boolean().default(true).optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: 'Minimal satu field harus diperbarui',

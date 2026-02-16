@@ -8,9 +8,9 @@ export const createCategorySchema = z.object({
 
 export const updateCategorySchema = z
   .object({
-    name: z.string().trim().min(1).optional(),
+    name: z.string().trim().min(1, { message: 'Nama kategori wajib diisi' }),
     description: z.string().trim().optional(),
-    isActive: z.boolean().optional(),
+    isActive: z.boolean().default(true).optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: 'Minimal satu field harus diperbarui',

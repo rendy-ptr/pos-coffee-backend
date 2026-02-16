@@ -14,7 +14,7 @@ export class MenuService {
   private repository = menuRepository;
 
   async getAllMenus(): Promise<menuListResponse[]> {
-    return this.repository.findAll();
+    return this.repository.getAll();
   }
 
   async createMenu(data: CreateMenuDTO): Promise<menuMutateResponse> {

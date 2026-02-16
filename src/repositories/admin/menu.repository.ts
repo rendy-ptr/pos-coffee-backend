@@ -9,7 +9,7 @@ import {
 } from '@/queries/menu.query';
 
 export class MenuRepository {
-  async findAll(): Promise<menuListResponse[]> {
+  async getAll(): Promise<menuListResponse[]> {
     return prisma.menu.findMany({
       orderBy: { createdAt: 'desc' },
       select: menuListSelect,

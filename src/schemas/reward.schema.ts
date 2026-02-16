@@ -1,95 +1,74 @@
 import { z } from 'zod';
 
-export const createRewardSchema = z
-  .object({
-    title: z.string().min(3).max(100),
-    type: z.enum(['REWARD', 'VOUCHER']),
-    description: z.string().max(500).optional(),
-    points: z.number({ error: 'Poin harus angka' }).int().positive().optional(),
-    code: z.string().min(3).max(50).optional(),
-
-    expiryDate: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal tidak valid (YYYY-MM-DD)')
-      .optional()
-      .transform(val => (val === '' ? undefined : val)),
-
-    conditions: z.string().max(500).optional(),
-    isActive: z.boolean(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.type === 'REWARD' && (!data.points || data.points <= 0)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['points'],
-        message: 'Poin wajib diisi untuk tipe REWARD',
-      });
-    }
-
-    if (data.type === 'VOUCHER') {
-      if (!data.code) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['code'],
-          message: 'Kode voucher wajib diisi untuk tipe VOUCHER',
-        });
-      }
-      if (!data.expiryDate) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['expiryDate'],
-          message: 'Tanggal kadaluarsa wajib diisi untuk tipe VOUCHER',
-        });
-      }
-    }
-  });
+export const createRewardSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: 'Judul Reward wajib diisi' })
+    .max(100, { message: 'Judul Reward maksimal 100 karakter' }),
+  type: z.enum(['REWARD', 'VOUCHER']),
+  description: z
+    .string()
+    .trim()
+    .max(255, { message: 'Deskripsi maksimal 255 karakter' })
+    .optional(),
+  isActive: z.boolean().default(true),
+  points: z.number({ message: 'Poin harus angka' }).int().positive().optional(),
+  code: z
+    .string()
+    .trim()
+    .min(1, { message: 'Kode voucher wajib diisi untuk tipe VOUCHER' })
+    .max(50, { message: 'Kode voucher maksimal 50 karakter' })
+    .optional(),
+  expiryDate: z.iso
+    .datetime({ message: 'Tanggal kadaluarsa harus dalam format ISO 8601' })
+    .optional(),
+  conditions: z
+    .string()
+    .trim()
+    .max(255, { message: 'Syarat dan ketentuan maksimal 255 karakter' })
+    .optional(),
+});
 
 export const updateRewardSchema = z
   .object({
-    title: z.string().min(3).max(100).optional(),
-    type: z.enum(['REWARD', 'VOUCHER']).optional(),
-    description: z.string().max(500).optional(),
-    points: z.number({ error: 'Poin harus angka' }).int().positive().optional(),
-    code: z.string().min(3).max(50).optional(),
-    expiryDate: z
+    name: z
       .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal tidak valid (YYYY-MM-DD)')
-      .optional()
-      .transform(val => (val === '' ? undefined : val)),
-    conditions: z.string().max(500).optional(),
-    isActive: z.boolean().optional(),
+      .trim()
+      .min(1, { message: 'Judul Reward wajib diisi' })
+      .max(100, { message: 'Judul Reward maksimal 100 karakter' })
+      .optional(),
+    type: z.enum(['REWARD', 'VOUCHER']).optional(),
+    description: z
+      .string()
+      .trim()
+      .max(255, { message: 'Deskripsi maksimal 255 karakter' })
+      .optional(),
+    isActive: z.boolean().default(true).optional(),
+    points: z
+      .number({ message: 'Poin harus angka' })
+      .int()
+      .positive()
+      .optional(),
+    code: z
+      .string()
+      .trim()
+      .min(1, { message: 'Kode voucher wajib diisi untuk tipe VOUCHER' })
+      .max(50, { message: 'Kode voucher maksimal 50 karakter' })
+      .optional(),
+    expiryDate: z.iso
+      .datetime({ message: 'Tanggal kadaluarsa harus dalam format ISO 8601' })
+      .optional(),
+    conditions: z
+      .string()
+      .trim()
+      .max(255, { message: 'Syarat dan ketentuan maksimal 255 karakter' })
+      .optional(),
   })
-  .superRefine((data, ctx) => {
-    if (
-      data.type === 'REWARD' &&
-      'points' in data &&
-      (!data.points || data.points <= 0)
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['points'],
-        message: 'Poin wajib diisi untuk tipe REWARD',
-      });
-    }
-
-    if (data.type === 'VOUCHER') {
-      if ('code' in data && !data.code) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['code'],
-          message: 'Kode voucher wajib diisi untuk tipe VOUCHER',
-        });
-      }
-      if ('expiryDate' in data && !data.expiryDate) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['expiryDate'],
-          message: 'Tanggal kadaluarsa wajib diisi untuk tipe VOUCHER',
-        });
-      }
-    }
+  .refine(data => Object.keys(data).length > 0, {
+    message: 'Minimal satu field harus diperbarui',
   });
 
-export type UpdateRewardInputPayload = z.infer<typeof updateRewardSchema>;
+export type UpdateRewardDTO = z.infer<typeof updateRewardSchema>;
 
-export type CreateRewardInputPayload = z.infer<typeof createRewardSchema>;
+export type CreateRewardDTO = z.infer<typeof createRewardSchema>;

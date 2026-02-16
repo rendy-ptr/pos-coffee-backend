@@ -226,7 +226,7 @@ model Table {
 
 model Reward {
   id          String     @id @default(cuid())
-  title       String     @unique
+  name        String     @unique
   type        RewardType // REWARD atau VOUCHER
   description String?
 
