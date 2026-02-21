@@ -1,6 +1,6 @@
-import type { CreateKasirDTO } from '../schemas/kasir.schema';
+import type { CreateCashierDTO } from '../features/admin-role/cashier/schemas/cashier.schema';
 
-export const KASIR_MOCK: CreateKasirDTO[] = [
+export const CASHIER_MOCK: CreateCashierDTO[] = [
   {
     name: 'Budi Santoso',
     email: 'budi@example.com',

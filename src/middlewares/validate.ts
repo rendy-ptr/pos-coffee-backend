@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { ZodError, type ZodType } from 'zod';
-import type { ApiRes } from '@/types/response/api.type';
+import type { ApiRes } from '@/types/api.type';
 
 export const validate =
   (schema: ZodType) =>

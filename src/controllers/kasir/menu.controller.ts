@@ -1,7 +1,7 @@
 import { prisma } from '@/utils/prisma';
 import { baseLogger } from '@/middlewares/logger';
-import type { ApiResponse } from '@/types/response/api.type';
-import { AuthRequest } from '@/types/auth/auth.type';
+import type { ApiResponse } from '@/types/api.type';
+import { AuthRequest } from '@/types/auth.type';
 import { Response } from 'express';
 
 type MenuWithCategory = {

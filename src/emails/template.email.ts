@@ -5,7 +5,7 @@ interface EmailTemplate {
 }
 
 export const emailTemplates = {
-  newKasirAccount: (
+  newCashierAccount: (
     name: string,
     email: string,
     password: string
@@ -38,11 +38,11 @@ Tim Aroma Kopi`,
     <p style="font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
       Halo <strong>${name}</strong>,
     </p>
-    
+
     <p style="font-size: 15px; line-height: 1.6; margin: 0 0 24px 0;">
       Akun kasir Anda telah dibuat. Berikut kredensial login Anda:
     </p>
-    
+
     <div style="background-color: #f9f9f9; padding: 16px 20px; border-radius: 6px; margin-bottom: 24px;">
       <p style="margin: 0 0 8px 0; font-size: 14px;">
         <span style="color: #666;">Email:</span> <strong>${email}</strong>
@@ -51,11 +51,11 @@ Tim Aroma Kopi`,
         <span style="color: #666;">Password:</span> <strong style="font-family: monospace;">${password}</strong>
       </p>
     </div>
-    
+
     <p style="font-size: 14px; line-height: 1.6; margin: 0 0 24px 0; color: #666;">
       Segera ganti password Anda setelah login pertama.
     </p>
-    
+
     <p style="font-size: 14px; margin: 0; color: #999;">
       — Tim Aroma Kopi
     </p>

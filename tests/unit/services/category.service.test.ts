@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { CategoryService } from '@/services/admin/category.service';
-import { categoryRepository } from '@/repositories/admin/category.repository';
+import { CategoryService } from '@/features/admin-role/category/services/category.service';
+import { categoryRepository } from '@/features/admin-role/category/repositories/category.repository';
 import { BusinessError, NotFoundError } from '@/utils/errors';
 
 // Mock repository

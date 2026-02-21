@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { PrismaClient, UserRole } from '@prisma/client';
 import { baseLogger } from './logger';
-import { JwtPayload } from '../types/auth/auth.type';
+import { JwtPayload } from '../types/auth.type';
 
 const prisma = new PrismaClient();
 
@@ -121,7 +121,7 @@ export const authMiddleware = (allowedRoles: UserRole[]) => {
       }
 
       baseLogger.error('Error selama autentikasi', {
-        token: token.slice(0, 10) + '...', // Jangan log seluruh token
+        token: token.slice(0, 10) + '...',
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       });

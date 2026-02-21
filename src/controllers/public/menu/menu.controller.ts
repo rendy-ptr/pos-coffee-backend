@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { baseLogger } from '@/middlewares/logger';
 import { prisma } from '@/utils/prisma';
-import type { ApiResponse } from '@/types/response/api.type';
+import type { ApiResponse } from '@/types/api.type';
 
 interface PublicCategory {
   id: string;

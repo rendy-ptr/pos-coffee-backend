@@ -13,7 +13,7 @@ datasource db {
 
 enum UserRole {
   CUSTOMER
-  KASIR
+  CASHIER
   ADMIN
 }
 
@@ -70,10 +70,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   customerProfile CustomerProfile?
-  kasirProfile    KasirProfile?
+  cashierProfile  CashierProfile?
   adminProfile    AdminProfile?
   customerOrders  Order[]          @relation("CustomerOrders")
-  processedOrders Order[]          @relation("KasirOrders")
+  processedOrders Order[]          @relation("CashierOrders")
 
   @@map("users")
 }
@@ -89,7 +89,7 @@ model CustomerProfile {
   @@map("customer_profiles")
 }
 
-model KasirProfile {
+model CashierProfile {
   id         String @id @default(cuid())
   userId     String @unique
   shiftStart String
@@ -100,7 +100,7 @@ model KasirProfile {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("kasir_profiles")
+  @@map("cashier_profiles")
 }
 
 model AdminProfile {
@@ -122,7 +122,7 @@ model Order {
   customerName  String?
   customerPhone String?
 
-  kasirId     String
+  cashierId     String
   orderType   OrderType   @default(DINE_IN)
   status      OrderStatus @default(PENDING)
   tableNumber String?
@@ -141,7 +141,7 @@ model Order {
   completedAt DateTime?
 
   customer   User?       @relation("CustomerOrders", fields: [customerId], references: [id])
-  kasir      User        @relation("KasirOrders", fields: [kasirId], references: [id])
+  cashier      User        @relation("CashierOrders", fields: [cashierId], references: [id])
   orderItems OrderItem[]
 
   @@index([orderNumber])

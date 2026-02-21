@@ -1,5 +1,5 @@
 import { prisma } from '@/utils/prisma';
-import { KASIR_MOCK } from '@/mocks/kasir.mock';
+import { CASHIER_MOCK } from '@/mocks/kasir.mock';
 import { baseLogger } from '@/middlewares/logger';
 import { hashPassword } from '@/utils/hash';
 
@@ -17,13 +17,13 @@ async function main() {
     );
   }
 
-  for (const kasir of KASIR_MOCK) {
-    const existingKasir = await prisma.user.findUnique({
-      where: { email: kasir.email },
+  for (const cashier of CASHIER_MOCK) {
+    const existingCashier = await prisma.user.findUnique({
+      where: { email: cashier.email },
     });
 
-    if (existingKasir) {
-      console.log(`⚠️ Kasir dengan email ${kasir.email} sudah ada, lewati.`);
+    if (existingCashier) {
+      console.log(`⚠️ Kasir dengan email ${cashier.email} sudah ada, lewati.`);
       continue;
     }
 
@@ -32,23 +32,23 @@ async function main() {
 
     await prisma.user.create({
       data: {
-        name: kasir.name,
-        email: kasir.email,
+        name: cashier.name,
+        email: cashier.email,
         password: hashedPassword,
-        role: 'KASIR',
-        phone: kasir.phone,
-        profilePicture: kasir.profilePicture,
-        isActive: kasir.isActive,
-        kasirProfile: {
+        role: 'CASHIER',
+        phone: cashier.phone,
+        profilePicture: cashier.profilePicture,
+        isActive: cashier.isActive,
+        cashierProfile: {
           create: {
-            shiftStart: kasir.shiftStart,
-            shiftEnd: kasir.shiftEnd,
+            shiftStart: cashier.shiftStart,
+            shiftEnd: cashier.shiftEnd,
           },
         },
       },
     });
 
-    console.log(`✅ Kasir ${kasir.name} berhasil dibuat.`);
+    console.log(`✅ Kasir ${cashier.name} berhasil dibuat.`);
   }
 
   console.log('✅ Seeder kasir selesai!');

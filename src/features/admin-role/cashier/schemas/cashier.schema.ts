@@ -1,0 +1,56 @@
+import { z } from 'zod';
+
+export const createCashierSchema = z.object({
+  name: z.string().trim().min(1, { message: 'Nama kasir wajib diisi' }),
+
+  email: z.email({ message: 'Email tidak valid' }),
+
+  phone: z
+    .string()
+    .trim()
+    .min(10, { message: 'Nomor telepon minimal 10 digit' }),
+
+  profilePicture: z.string().optional(),
+
+  shiftStart: z.string().min(1, { message: 'Waktu mulai shift wajib diisi' }),
+
+  shiftEnd: z.string().min(1, { message: 'Waktu selesai shift wajib diisi' }),
+
+  isActive: z.boolean().default(true),
+});
+
+export const updateCashierSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, { message: 'Nama kasir wajib diisi' })
+      .optional(),
+
+    email: z.email({ message: 'Email tidak valid' }).optional(),
+
+    phone: z
+      .string()
+      .trim()
+      .min(10, { message: 'Nomor telepon minimal 10 digit' })
+      .optional(),
+
+    profilePicture: z.string().optional(),
+
+    shiftStart: z
+      .string()
+      .min(1, { message: 'Waktu mulai shift wajib diisi' })
+      .optional(),
+    shiftEnd: z
+      .string()
+      .min(1, { message: 'Waktu selesai shift wajib diisi' })
+      .optional(),
+
+    isActive: z.boolean().default(true).optional(),
+  })
+  .refine(data => Object.keys(data).length > 0, {
+    message: 'Minimal satu field harus diperbarui',
+  });
+
+export type CreateCashierDTO = z.infer<typeof createCashierSchema>;
+export type UpdateCashierDTO = z.infer<typeof updateCashierSchema>;

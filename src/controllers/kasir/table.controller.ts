@@ -1,8 +1,8 @@
 import { prisma } from '@/utils/prisma';
 import { Response } from 'express';
 import { baseLogger } from '@/middlewares/logger';
-import { AuthRequest } from '@/types/auth/auth.type';
-import type { ApiResponse } from '@/types/response/api.type';
+import { AuthRequest } from '@/types/auth.type';
+import type { ApiResponse } from '@/types/api.type';
 import type { Table } from '@prisma/client';
 
 export const getTables = async (
